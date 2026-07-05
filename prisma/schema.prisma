@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  phone     String    @unique
+  password  String
+  role      String    @default("vendedor")
+  createdAt DateTime  @default(now())
+}
+
+model Product {
+  id               Int       @id @default(autoincrement())
+  name             String
+  size             String    @default("")
+  price            Float     @default(0)
+  totalStock       Int       @default(0)
+  stockMercadito   Int       @default(0)
+  stockBoutique    Int       @default(0)
+  stockMiravalle   Int       @default(0)
+  stockDiamond     Int       @default(0)
+  stockMorelos     Int       @default(0)
+  stockValue       Float     @default(0)
+  orders           String    @default("")
+  notes            String    @default("")
+  category         String    @default("")
+  imageUrl         String    @default("")
+  barcode          String    @default("")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
