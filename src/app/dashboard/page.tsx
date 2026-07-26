@@ -33,8 +33,9 @@ export default function DashboardHome() {
         const meData = await meRes.json();
         const prodData = await prodRes.json();
         setUser(meData.user);
-        setProducts(prodData.products || []);
-        setLowStock((prodData.products || []).filter((p: Product) => p.totalStock <= 2));
+        const prods = prodData.products || [];
+        setProducts(prods);
+        setLowStock(prods.filter((p: Product) => p.totalStock <= 2 && p.totalStock > 0));
       } catch (e) {
         console.error(e);
       } finally {
@@ -47,69 +48,88 @@ export default function DashboardHome() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin h-10 w-10 border-4 border-amber-600 border-t-transparent rounded-full" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin h-10 w-10 border-4 border-amber-600 border-t-transparent rounded-full" />
+          <p className="text-sm text-gray-500">Cargando inventario...</p>
+        </div>
       </div>
     );
   }
 
   const totalValue = products.reduce((sum, p) => sum + p.price * p.totalStock, 0);
   const totalStock = products.reduce((sum, p) => sum + p.totalStock, 0);
-  const originales = products.filter((p) => p.category === "Original");
-  const calidad11 = products.filter((p) => p.category === "Calidad 1:1");
-  const imitacion = products.filter((p) => p.category === "Imitación");
+  const originals = products.filter((p) => p.category === "Original");
+  const quality11 = products.filter((p) => p.category === "Calidad 1:1");
+  const imitation = products.filter((p) => p.category === "Imitación");
+
+  const stats = [
+    { label: "Productos", value: products.length, icon: "🧴", color: "text-amber-700", bg: "bg-amber-50" },
+    { label: "En stock", value: totalStock, icon: "📦", color: "text-blue-700", bg: "bg-blue-50" },
+    { label: "Valor total", value: `$${totalValue.toLocaleString()}`, icon: "💰", color: "text-green-700", bg: "bg-green-50" },
+    { label: "Stock bajo", value: lowStock.length, icon: "⚠️", color: "text-red-600", bg: "bg-red-50" },
+  ];
+
+  const categories = [
+    { label: "Original", count: originals.length, stock: originals.reduce((s, p) => s + p.totalStock, 0), color: "border-amber-300 bg-amber-50", textColor: "text-amber-800", badgeColor: "bg-amber-200" },
+    { label: "Calidad 1:1", count: quality11.length, stock: quality11.reduce((s, p) => s + p.totalStock, 0), color: "border-blue-300 bg-blue-50", textColor: "text-blue-800", badgeColor: "bg-blue-200" },
+    { label: "Imitación", count: imitation.length, stock: imitation.reduce((s, p) => s + p.totalStock, 0), color: "border-purple-300 bg-purple-50", textColor: "text-purple-800", badgeColor: "bg-purple-200" },
+  ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold">Bienvenido, {user?.name}</h1>
-        <p className="text-gray-500">Panel de control de inventario</p>
+        <h1 className="text-2xl font-bold text-gray-800">
+          Hola, {user?.name} 👋
+        </h1>
+        <p className="text-gray-500 text-sm mt-0.5">Resumen de tu inventario</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <p className="text-sm text-gray-500">Total Productos</p>
-          <p className="text-3xl font-bold text-amber-700">{products.length}</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <p className="text-sm text-gray-500">Total Stock</p>
-          <p className="text-3xl font-bold text-blue-700">{totalStock}</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <p className="text-sm text-gray-500">Valor del Inventario</p>
-          <p className="text-3xl font-bold text-green-700">${totalValue.toLocaleString()}</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <p className="text-sm text-gray-500">Stock Bajo</p>
-          <p className="text-3xl font-bold text-red-700">{lowStock.length}</p>
-        </div>
+      <div className="grid grid-cols-2 gap-3 stagger">
+        {stats.map((s) => (
+          <div key={s.label} className={`${s.bg} rounded-2xl p-4 border border-gray-100/50`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-lg">{s.icon}</span>
+            </div>
+            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <p className="text-sm text-amber-700 font-medium">Original</p>
-          <p className="text-2xl font-bold text-amber-800">{originales.length} productos</p>
-          <p className="text-xs text-amber-600 mt-1">Stock: {originales.reduce((s, p) => s + p.totalStock, 0)} uds</p>
-        </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <p className="text-sm text-blue-700 font-medium">Calidad 1:1</p>
-          <p className="text-2xl font-bold text-blue-800">{calidad11.length} productos</p>
-          <p className="text-xs text-blue-600 mt-1">Stock: {calidad11.reduce((s, p) => s + p.totalStock, 0)} uds</p>
-        </div>
-        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
-          <p className="text-sm text-purple-700 font-medium">Imitación</p>
-          <p className="text-2xl font-bold text-purple-800">{imitacion.length} productos</p>
-          <p className="text-xs text-purple-600 mt-1">Stock: {imitacion.reduce((s, p) => s + p.totalStock, 0)} uds</p>
-        </div>
+      <div className="space-y-2">
+        {categories.map((cat) => (
+          <Link
+            key={cat.label}
+            href={`/dashboard/productos`}
+            className={`flex items-center justify-between p-4 rounded-2xl border ${cat.color} transition-all duration-200 active:scale-[0.98]`}
+          >
+            <div>
+              <p className={`font-semibold ${cat.textColor}`}>{cat.label}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{cat.count} productos</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className={`${cat.badgeColor} px-3 py-1 rounded-full`}>
+                <span className={`text-sm font-bold ${cat.textColor}`}>{cat.stock} uds</span>
+              </div>
+              <svg className={`w-5 h-5 ${cat.textColor}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+        ))}
       </div>
 
       {lowStock.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6">
-          <h2 className="font-semibold text-red-800 mb-3">Productos con stock bajo</h2>
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">⚠️</span>
+            <h2 className="font-semibold text-red-800">Stock bajo</h2>
+          </div>
           <div className="space-y-2">
             {lowStock.slice(0, 5).map((p) => (
-              <div key={p.id} className="flex justify-between text-sm">
-                <span className="text-red-700">{p.name} {p.size && `(${p.size})`}</span>
-                <span className="font-semibold text-red-700">{p.totalStock} uds.</span>
+              <div key={p.id} className="flex justify-between items-center bg-white/60 rounded-xl px-3 py-2">
+                <span className="text-sm text-red-700 font-medium">{p.name} {p.size && `(${p.size})`}</span>
+                <span className="text-sm font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">{p.totalStock} uds</span>
               </div>
             ))}
           </div>
@@ -119,15 +139,15 @@ export default function DashboardHome() {
       <div className="flex gap-3">
         <Link
           href="/dashboard/productos/nuevo"
-          className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-lg font-medium transition"
+          className="flex-1 bg-amber-600 hover:bg-amber-700 text-white px-5 py-3 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md text-center active:scale-95"
         >
           + Nuevo Producto
         </Link>
         <Link
           href="/dashboard/importar"
-          className="bg-white border border-gray-300 hover:bg-gray-50 px-5 py-2.5 rounded-lg font-medium transition"
+          className="flex-1 bg-white border border-gray-200 hover:border-amber-300 hover:bg-amber-50 px-5 py-3 rounded-xl font-medium transition-all duration-200 text-center active:scale-95"
         >
-          Importar Excel
+          📥 Importar
         </Link>
       </div>
     </div>

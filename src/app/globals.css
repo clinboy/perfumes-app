@@ -5,3 +5,57 @@ body {
   color: #111827;
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.35s ease-out both;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.25s ease-out both;
+}
+
+.animate-fade-in-delay-1 { animation-delay: 0.05s; }
+.animate-fade-in-delay-2 { animation-delay: 0.1s; }
+.animate-fade-in-delay-3 { animation-delay: 0.15s; }
+.animate-fade-in-delay-4 { animation-delay: 0.2s; }
+
+.stagger > * {
+  animation: slide-up 0.35s ease-out both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.03s; }
+.stagger > *:nth-child(2) { animation-delay: 0.06s; }
+.stagger > *:nth-child(3) { animation-delay: 0.09s; }
+.stagger > *:nth-child(4) { animation-delay: 0.12s; }
+.stagger > *:nth-child(5) { animation-delay: 0.15s; }
+.stagger > *:nth-child(6) { animation-delay: 0.18s; }
+
+.bottom-nav {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav-item.active svg {
+  color: #d97706;
+}
+
+.bottom-nav-item.active span {
+  color: #d97706;
+}

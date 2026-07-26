@@ -60,28 +60,35 @@ export default function NewProductPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Nuevo Producto</h1>
+    <div className="max-w-2xl mx-auto animate-fade-in">
+      <div className="flex items-center gap-3 mb-6">
+        <button onClick={() => router.back()} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h1 className="text-2xl font-bold text-gray-800">Nuevo Producto</h1>
+      </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nombre *</label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all bg-gray-50 focus:bg-white"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tamaño</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Tamaño</label>
             <input
               type="text"
               value={form.size}
               onChange={(e) => setForm({ ...form, size: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all bg-gray-50 focus:bg-white"
               placeholder="100ml"
             />
           </div>
@@ -89,33 +96,22 @@ export default function NewProductPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Precio</label>
             <input
               type="number"
               step="0.01"
               value={form.price}
               onChange={(e) => setForm({ ...form, price: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all bg-gray-50 focus:bg-white"
+              placeholder="$0"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Total Stock</label>
-            <input
-              type="number"
-              value={form.totalStock}
-              onChange={(e) => setForm({ ...form, totalStock: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Categoría</label>
             <select
               value={form.category}
               onChange={(e) => setForm({ ...form, category: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all bg-gray-50 focus:bg-white"
             >
               <option value="">Sin categoría</option>
               <option value="Original">Original</option>
@@ -126,80 +122,57 @@ export default function NewProductPage() {
         </div>
 
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">Stock por Sucursal</p>
+          <p className="text-sm font-medium text-gray-700 mb-3">Stock por Sucursal</p>
           <div className="grid grid-cols-5 gap-2">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Mercadito</label>
-              <input
-                type="number"
-                value={form.stockMercadito}
-                onChange={(e) => setForm({ ...form, stockMercadito: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Boutique</label>
-              <input
-                type="number"
-                value={form.stockBoutique}
-                onChange={(e) => setForm({ ...form, stockBoutique: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Miravalle</label>
-              <input
-                type="number"
-                value={form.stockMiravalle}
-                onChange={(e) => setForm({ ...form, stockMiravalle: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Diamond</label>
-              <input
-                type="number"
-                value={form.stockDiamond}
-                onChange={(e) => setForm({ ...form, stockDiamond: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Morelos</label>
-              <input
-                type="number"
-                value={form.stockMorelos}
-                onChange={(e) => setForm({ ...form, stockMorelos: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm"
-              />
-            </div>
+            {[
+              { key: "stockMercadito", label: "Mercadito", color: "focus:ring-blue-500" },
+              { key: "stockBoutique", label: "Boutique", color: "focus:ring-green-500" },
+              { key: "stockMiravalle", label: "Miravalle", color: "focus:ring-purple-500" },
+              { key: "stockDiamond", label: "Diamond", color: "focus:ring-yellow-500" },
+              { key: "stockMorelos", label: "Morelos", color: "focus:ring-pink-500" },
+            ].map((s) => (
+              <div key={s.key}>
+                <label className="block text-xs text-gray-500 mb-1 font-medium">{s.label}</label>
+                <input
+                  type="number"
+                  value={(form as unknown as Record<string, string>)[s.key]}
+                  onChange={(e) => setForm({ ...form, [s.key]: e.target.value })}
+                  className={`w-full px-2 py-2 border border-gray-200 rounded-xl focus:ring-2 ${s.color} focus:border-transparent outline-none text-center text-sm transition-all bg-gray-50 focus:bg-white`}
+                />
+              </div>
+            ))}
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Notas</label>
           <textarea
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all bg-gray-50 focus:bg-white resize-none"
             rows={2}
+            placeholder="Observaciones..."
           />
         </div>
 
-        {error && <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">{error}</p>}
+        {error && (
+          <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-3 rounded-xl">
+            <span>⚠️</span>{error}
+          </div>
+        )}
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 pt-2">
           <button
             type="submit"
             disabled={loading}
-            className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2.5 rounded-lg font-medium transition disabled:opacity-50"
+            className="flex-1 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 shadow-sm hover:shadow-md active:scale-[0.98]"
           >
             {loading ? "Guardando..." : "Guardar"}
           </button>
           <button
             type="button"
             onClick={() => router.push("/dashboard/productos")}
-            className="bg-gray-200 hover:bg-gray-300 px-6 py-2.5 rounded-lg font-medium transition"
+            className="bg-gray-100 hover:bg-gray-200 px-6 py-3 rounded-xl font-medium transition-all duration-200 active:scale-[0.98]"
           >
             Cancelar
           </button>

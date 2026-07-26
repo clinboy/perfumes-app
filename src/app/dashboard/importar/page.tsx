@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ImportPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ imported: number } | null>(null);
@@ -43,27 +45,39 @@ export default function ImportPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-2">Importar desde Excel</h1>
-      <p className="text-gray-500 mb-6">
-        Sube un archivo Excel (.xlsx o .xls) con las columnas: nombre, precio, stock, categoria, codigo, descripcion
-      </p>
+    <div className="max-w-2xl mx-auto animate-fade-in">
+      <div className="flex items-center gap-3 mb-6">
+        <button onClick={() => router.back()} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Importar Excel</h1>
+          <p className="text-gray-500 text-sm">Actualiza tu inventario desde un archivo</p>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
         <div
-          className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-amber-500 transition"
+          className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all duration-200 ${
+            file
+              ? "border-green-400 bg-green-50"
+              : "border-gray-200 hover:border-amber-400 hover:bg-amber-50/50"
+          }`}
           onClick={() => inputRef.current?.click()}
         >
           {file ? (
-            <div>
-              <p className="text-lg font-medium text-amber-700">{file.name}</p>
-              <p className="text-sm text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
+            <div className="animate-fade-in">
+              <div className="text-4xl mb-2">✅</div>
+              <p className="font-medium text-green-700">{file.name}</p>
+              <p className="text-sm text-gray-500 mt-1">{(file.size / 1024).toFixed(1)} KB</p>
             </div>
           ) : (
             <div>
-              <p className="text-4xl mb-2">📁</p>
-              <p className="text-gray-500">Haz clic para seleccionar un archivo Excel</p>
-              <p className="text-sm text-gray-400 mt-1">.xlsx o .xls</p>
+              <div className="text-5xl mb-3">📁</div>
+              <p className="text-gray-600 font-medium">Toca para seleccionar un archivo</p>
+              <p className="text-sm text-gray-400 mt-1">Formatos .xlsx o .xls</p>
             </div>
           )}
           <input
@@ -75,25 +89,35 @@ export default function ImportPage() {
           />
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
-          <p className="font-medium mb-1">Columnas reconocidas:</p>
-          <p>nombre, descripcion, precio, stock, categoria, codigo</p>
-        </div>
-
-        {error && <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">{error}</p>}
+        {error && (
+          <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-3 rounded-xl">
+            <span>⚠️</span>{error}
+          </div>
+        )}
 
         {result && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-700">
-            ¡Importación exitosa! {result.imported} productos importados.
+          <div className="flex items-center gap-2 text-green-700 text-sm bg-green-50 p-4 rounded-xl animate-fade-in">
+            <span className="text-lg">✅</span>
+            <div>
+              <p className="font-semibold">Importación exitosa</p>
+              <p className="text-green-600">{result.imported} productos importados correctamente</p>
+            </div>
           </div>
         )}
 
         <button
           type="submit"
           disabled={!file || loading}
-          className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-50"
+          className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 rounded-xl transition-all duration-200 disabled:opacity-50 shadow-sm hover:shadow-md active:scale-[0.98]"
         >
-          {loading ? "Importando..." : "Importar"}
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+              Importando...
+            </span>
+          ) : (
+            "Importar"
+          )}
         </button>
       </form>
     </div>
