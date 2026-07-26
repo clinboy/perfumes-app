@@ -15,6 +15,7 @@ interface ProductForm {
   stockMorelos: string;
   notes: string;
   category: string;
+  imageUrl: string;
 }
 
 export default function EditProductPage() {
@@ -32,6 +33,7 @@ export default function EditProductPage() {
     stockMorelos: "",
     notes: "",
     category: "",
+    imageUrl: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -55,6 +57,7 @@ export default function EditProductPage() {
             stockMorelos: String(data.product.stockMorelos),
             notes: data.product.notes || "",
             category: data.product.category || "",
+            imageUrl: data.product.imageUrl || "",
           });
         }
       } catch (e) {
@@ -127,6 +130,11 @@ export default function EditProductPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+        {form.imageUrl && (
+          <div className="flex justify-center">
+            <img src={form.imageUrl} alt={form.name} className="w-32 h-32 object-cover rounded-2xl shadow-md" />
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2 sm:col-span-1">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Nombre *</label>
