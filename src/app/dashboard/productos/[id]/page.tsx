@@ -38,6 +38,7 @@ export default function EditProductPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
+  const [showImage, setShowImage] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -129,12 +130,30 @@ export default function EditProductPage() {
         <h1 className="text-2xl font-bold text-gray-800">Editar Producto</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden space-y-0">
         {form.imageUrl && (
-          <div className="flex justify-center">
-            <img src={form.imageUrl} alt={form.name} className="w-32 h-32 object-cover rounded-2xl shadow-md" />
-          </div>
+          <>
+            <img
+              src={form.imageUrl}
+              alt={form.name}
+              className="w-full h-64 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => setShowImage(true)}
+            />
+            {showImage && (
+              <div
+                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 cursor-pointer"
+                onClick={() => setShowImage(false)}
+              >
+                <img
+                  src={form.imageUrl}
+                  alt={form.name}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                />
+              </div>
+            )}
+          </>
         )}
+        <div className="p-6 space-y-5">
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2 sm:col-span-1">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Nombre *</label>
@@ -237,6 +256,7 @@ export default function EditProductPage() {
           >
             Cancelar
           </button>
+        </div>
         </div>
       </form>
     </div>
