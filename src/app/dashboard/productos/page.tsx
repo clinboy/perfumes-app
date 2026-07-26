@@ -52,7 +52,10 @@ export default function ProductsPage() {
   }, [products, search, categoryFilter]);
 
   async function handleDelete(id: number, name: string) {
-    if (!confirm(`¿Eliminar "${name}"?`)) return;
+    const first = confirm(`¿Eliminar "${name}"?`);
+    if (!first) return;
+    const second = confirm(`¿Estás seguro? Esta acción no se puede deshacer.`);
+    if (!second) return;
     await fetch(`/api/products/${id}`, { method: "DELETE" });
     setProducts((prev) => prev.filter((p) => p.id !== id));
   }
@@ -185,6 +188,14 @@ export default function ProductsPage() {
                   {p.totalStock} uds
                 </div>
               </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleDelete(p.id, p.name); }}
+                className="flex-shrink-0 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
             </div>
           ))}
         </div>
