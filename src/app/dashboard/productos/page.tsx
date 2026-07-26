@@ -181,28 +181,22 @@ export default function ProductsPage() {
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                      {[
-                        { name: "Mercadito", value: p.stockMercadito, bg: "bg-blue-100", text: "text-blue-700" },
-                        { name: "Boutique", value: p.stockBoutique, bg: "bg-green-100", text: "text-green-700" },
-                        { name: "Miravalle", value: p.stockMiravalle, bg: "bg-purple-100", text: "text-purple-700" },
-                        { name: "Diamond", value: p.stockDiamond, bg: "bg-yellow-100", text: "text-yellow-700" },
-                        { name: "Morelos", value: p.stockMorelos, bg: "bg-pink-100", text: "text-pink-700" },
-                      ].filter((s) => s.value > 0).length === 0 ? (
-                        <span className="text-xs text-gray-400 italic">Sin stock</span>
-                      ) : (
-                        [
+                      {(() => {
+                        const branches = [
                           { name: "Mercadito", value: p.stockMercadito, bg: "bg-blue-100", text: "text-blue-700" },
                           { name: "Boutique", value: p.stockBoutique, bg: "bg-green-100", text: "text-green-700" },
                           { name: "Miravalle", value: p.stockMiravalle, bg: "bg-purple-100", text: "text-purple-700" },
                           { name: "Diamond", value: p.stockDiamond, bg: "bg-yellow-100", text: "text-yellow-700" },
                           { name: "Morelos", value: p.stockMorelos, bg: "bg-pink-100", text: "text-pink-700" },
-                        ].filter((s) => s.value > 0).map((s) => (
+                        ].filter((s) => s.value > 0);
+                        if (branches.length === 0) return <span className="text-xs text-gray-400 italic">Sin stock</span>;
+                        return branches.map((s) => (
                           <div key={s.name} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${s.bg} ${s.text}`}>
                             <span>{s.name}</span>
                             <span className="font-bold">{s.value}</span>
                           </div>
-                        ))
-                      )}
+                        ));
+                      })()}
                     </div>
                   </div>
                 </div>
