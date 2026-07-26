@@ -139,15 +139,9 @@ export default function DashboardHome() {
       <div className="flex gap-3">
         <Link
           href="/dashboard/productos/nuevo"
-          className="flex-1 bg-amber-600 hover:bg-amber-700 text-white px-5 py-3 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md text-center active:scale-95"
+          className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-3 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md text-center active:scale-95"
         >
           + Nuevo Producto
-        </Link>
-        <Link
-          href="/dashboard/importar"
-          className="flex-1 bg-white border border-gray-200 hover:border-amber-300 hover:bg-amber-50 px-5 py-3 rounded-xl font-medium transition-all duration-200 text-center active:scale-95"
-        >
-          📥 Importar
         </Link>
       </div>
     </div>
