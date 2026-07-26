@@ -17,6 +17,7 @@ interface Product {
   stockMorelos: number;
   category: string;
   notes: string;
+  imageUrl: string | null;
 }
 
 export default function ProductsPage() {
@@ -156,6 +157,9 @@ export default function ProductsPage() {
               onClick={() => router.push(`/dashboard/productos/${p.id}`)}
               className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-4 hover:shadow-md hover:border-amber-200 transition-all duration-200 cursor-pointer active:scale-[0.99]"
             >
+              {p.imageUrl && (
+                <img src={p.imageUrl} alt={p.name} className="w-14 h-14 object-cover rounded-lg flex-shrink-0" />
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-semibold text-gray-800 truncate">{p.name}</h3>
