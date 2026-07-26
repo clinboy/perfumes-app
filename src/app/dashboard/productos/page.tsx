@@ -24,12 +24,14 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
 
   async function loadProducts() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (search) params.set("search", search);
+      if (categoryFilter) params.set("category", categoryFilter);
       const res = await fetch(`/api/products?${params}`);
       const data = await res.json();
       setProducts(data.products || []);
@@ -42,7 +44,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [categoryFilter]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -80,6 +82,27 @@ export default function ProductsPage() {
         </button>
       </form>
 
+      <div className="flex gap-2 flex-wrap">
+        {[
+          { value: "", label: "Todos" },
+          { value: "Originales", label: "Originales" },
+          { value: "Calidad 1:1", label: "Calidad 1:1" },
+          { value: "Imitación", label: "Imitación" },
+        ].map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setCategoryFilter(tab.value)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${
+              categoryFilter === tab.value
+                ? "bg-amber-600 text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-10">
           <div className="animate-spin h-10 w-10 border-4 border-amber-600 border-t-transparent rounded-full" />
@@ -97,6 +120,7 @@ export default function ProductsPage() {
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="text-left px-3 py-3 font-medium">Producto</th>
+                <th className="text-left px-3 py-3 font-medium hidden sm:table-cell">Categoría</th>
                 <th className="text-left px-3 py-3 font-medium">Tamaño</th>
                 <th className="text-right px-3 py-3 font-medium">Precio</th>
                 <th className="text-right px-3 py-3 font-medium">Stock</th>
@@ -108,6 +132,17 @@ export default function ProductsPage() {
               {products.map((p) => (
                 <tr key={p.id} className="hover:bg-gray-50 transition">
                   <td className="px-3 py-3 font-medium">{p.name}</td>
+                  <td className="px-3 py-3 hidden sm:table-cell">
+                    {p.category ? (
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        p.category === "Originales" ? "bg-amber-100 text-amber-800" :
+                        p.category === "Calidad 1:1" ? "bg-blue-100 text-blue-800" :
+                        "bg-purple-100 text-purple-800"
+                      }`}>
+                        {p.category}
+                      </span>
+                    ) : <span className="text-gray-400">-</span>}
+                  </td>
                   <td className="px-3 py-3 text-gray-600">{p.size || "-"}</td>
                   <td className="px-3 py-3 text-right">${p.price.toFixed(2)}</td>
                   <td className={`px-3 py-3 text-right font-medium ${p.totalStock <= 2 ? "text-red-600" : ""}`}>

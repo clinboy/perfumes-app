@@ -14,6 +14,7 @@ interface ProductForm {
   stockDiamond: string;
   stockMorelos: string;
   notes: string;
+  category: string;
 }
 
 export default function EditProductPage() {
@@ -30,6 +31,7 @@ export default function EditProductPage() {
     stockDiamond: "",
     stockMorelos: "",
     notes: "",
+    category: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -52,6 +54,7 @@ export default function EditProductPage() {
             stockDiamond: String(data.product.stockDiamond),
             stockMorelos: String(data.product.stockMorelos),
             notes: data.product.notes || "",
+            category: data.product.category || "",
           });
         }
       } catch (e) {
@@ -83,6 +86,7 @@ export default function EditProductPage() {
           stockDiamond: parseInt(form.stockDiamond) || 0,
           stockMorelos: parseInt(form.stockMorelos) || 0,
           notes: form.notes,
+          category: form.category,
         }),
       });
 
@@ -155,6 +159,20 @@ export default function EditProductPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
             />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+          <select
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
+          >
+            <option value="">Sin categoría</option>
+            <option value="Originales">Originales</option>
+            <option value="Calidad 1:1">Calidad 1:1</option>
+            <option value="Imitación">Imitación</option>
+          </select>
         </div>
 
         <div>

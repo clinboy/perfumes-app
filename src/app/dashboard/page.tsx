@@ -9,6 +9,7 @@ interface Product {
   price: number;
   totalStock: number;
   size: string;
+  category: string;
 }
 
 interface User {
@@ -53,6 +54,9 @@ export default function DashboardHome() {
 
   const totalValue = products.reduce((sum, p) => sum + p.price * p.totalStock, 0);
   const totalStock = products.reduce((sum, p) => sum + p.totalStock, 0);
+  const originales = products.filter((p) => p.category === "Originales");
+  const calidad11 = products.filter((p) => p.category === "Calidad 1:1");
+  const imitacion = products.filter((p) => p.category === "Imitación");
 
   return (
     <div className="space-y-6">
@@ -77,6 +81,24 @@ export default function DashboardHome() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <p className="text-sm text-gray-500">Stock Bajo</p>
           <p className="text-3xl font-bold text-red-700">{lowStock.length}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <p className="text-sm text-amber-700 font-medium">Originales</p>
+          <p className="text-2xl font-bold text-amber-800">{originales.length} productos</p>
+          <p className="text-xs text-amber-600 mt-1">Stock: {originales.reduce((s, p) => s + p.totalStock, 0)} uds</p>
+        </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <p className="text-sm text-blue-700 font-medium">Calidad 1:1</p>
+          <p className="text-2xl font-bold text-blue-800">{calidad11.length} productos</p>
+          <p className="text-xs text-blue-600 mt-1">Stock: {calidad11.reduce((s, p) => s + p.totalStock, 0)} uds</p>
+        </div>
+        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+          <p className="text-sm text-purple-700 font-medium">Imitación</p>
+          <p className="text-2xl font-bold text-purple-800">{imitacion.length} productos</p>
+          <p className="text-xs text-purple-600 mt-1">Stock: {imitacion.reduce((s, p) => s + p.totalStock, 0)} uds</p>
         </div>
       </div>
 
