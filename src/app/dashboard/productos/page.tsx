@@ -180,17 +180,17 @@ export default function ProductsPage() {
                         {p.totalStock} uds
                       </span>
                     </div>
-                    <div className="grid grid-cols-5 gap-1.5">
+                    <div className="flex flex-wrap gap-1.5">
                       {[
-                        { label: "M", value: p.stockMercadito, color: "bg-blue-50 text-blue-700" },
-                        { label: "B", value: p.stockBoutique, color: "bg-green-50 text-green-700" },
-                        { label: "Mi", value: p.stockMiravalle, color: "bg-purple-50 text-purple-700" },
-                        { label: "D", value: p.stockDiamond, color: "bg-yellow-50 text-yellow-700" },
-                        { label: "Mo", value: p.stockMorelos, color: "bg-pink-50 text-pink-700" },
+                        { name: "Mercadito", value: p.stockMercadito, bg: "bg-blue-100", text: "text-blue-700" },
+                        { name: "Boutique", value: p.stockBoutique, bg: "bg-green-100", text: "text-green-700" },
+                        { name: "Miravalle", value: p.stockMiravalle, bg: "bg-purple-100", text: "text-purple-700" },
+                        { name: "Diamond", value: p.stockDiamond, bg: "bg-yellow-100", text: "text-yellow-700" },
+                        { name: "Morelos", value: p.stockMorelos, bg: "bg-pink-100", text: "text-pink-700" },
                       ].map((s) => (
-                        <div key={s.label} className={`text-center py-1 rounded-md ${s.value > 0 ? s.color : "bg-gray-50 text-gray-300"}`}>
-                          <div className="text-[10px] font-medium">{s.label}</div>
-                          <div className="text-xs font-bold">{s.value}</div>
+                        <div key={s.name} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${s.value > 0 ? `${s.bg} ${s.text}` : "bg-gray-100 text-gray-400"}`}>
+                          <span>{s.name}</span>
+                          <span className={`font-bold ${s.value > 0 ? "" : "text-gray-300"}`}>{s.value}</span>
                         </div>
                       ))}
                     </div>
