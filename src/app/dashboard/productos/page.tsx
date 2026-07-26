@@ -187,12 +187,22 @@ export default function ProductsPage() {
                         { name: "Miravalle", value: p.stockMiravalle, bg: "bg-purple-100", text: "text-purple-700" },
                         { name: "Diamond", value: p.stockDiamond, bg: "bg-yellow-100", text: "text-yellow-700" },
                         { name: "Morelos", value: p.stockMorelos, bg: "bg-pink-100", text: "text-pink-700" },
-                      ].map((s) => (
-                        <div key={s.name} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${s.value > 0 ? `${s.bg} ${s.text}` : "bg-gray-100 text-gray-400"}`}>
-                          <span>{s.name}</span>
-                          <span className={`font-bold ${s.value > 0 ? "" : "text-gray-300"}`}>{s.value}</span>
-                        </div>
-                      ))}
+                      ].filter((s) => s.value > 0).length === 0 ? (
+                        <span className="text-xs text-gray-400 italic">Sin stock</span>
+                      ) : (
+                        [
+                          { name: "Mercadito", value: p.stockMercadito, bg: "bg-blue-100", text: "text-blue-700" },
+                          { name: "Boutique", value: p.stockBoutique, bg: "bg-green-100", text: "text-green-700" },
+                          { name: "Miravalle", value: p.stockMiravalle, bg: "bg-purple-100", text: "text-purple-700" },
+                          { name: "Diamond", value: p.stockDiamond, bg: "bg-yellow-100", text: "text-yellow-700" },
+                          { name: "Morelos", value: p.stockMorelos, bg: "bg-pink-100", text: "text-pink-700" },
+                        ].filter((s) => s.value > 0).map((s) => (
+                          <div key={s.name} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${s.bg} ${s.text}`}>
+                            <span>{s.name}</span>
+                            <span className="font-bold">{s.value}</span>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>
