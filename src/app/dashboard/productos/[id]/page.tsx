@@ -141,7 +141,7 @@ export default function EditProductPage() {
             />
             {showImage && (
               <div
-                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 cursor-pointer"
+                className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center pt-16 p-4 cursor-pointer"
                 onClick={() => setShowImage(false)}
               >
                 <img
