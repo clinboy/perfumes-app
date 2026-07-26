@@ -169,7 +169,7 @@ export default function EditProductPage() {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
           >
             <option value="">Sin categoría</option>
-            <option value="Originales">Originales</option>
+              <option value="Original">Original</option>
             <option value="Calidad 1:1">Calidad 1:1</option>
             <option value="Imitación">Imitación</option>
           </select>

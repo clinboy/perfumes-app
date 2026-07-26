@@ -85,7 +85,7 @@ export default function ProductsPage() {
       <div className="flex gap-2 flex-wrap">
         {[
           { value: "", label: "Todos" },
-          { value: "Originales", label: "Originales" },
+          { value: "Original", label: "Original" },
           { value: "Calidad 1:1", label: "Calidad 1:1" },
           { value: "Imitación", label: "Imitación" },
         ].map((tab) => (
@@ -135,7 +135,7 @@ export default function ProductsPage() {
                   <td className="px-3 py-3 hidden sm:table-cell">
                     {p.category ? (
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        p.category === "Originales" ? "bg-amber-100 text-amber-800" :
+                        p.category === "Original" ? "bg-amber-100 text-amber-800" :
                         p.category === "Calidad 1:1" ? "bg-blue-100 text-blue-800" :
                         "bg-purple-100 text-purple-800"
                       }`}>

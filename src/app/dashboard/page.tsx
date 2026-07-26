@@ -54,7 +54,7 @@ export default function DashboardHome() {
 
   const totalValue = products.reduce((sum, p) => sum + p.price * p.totalStock, 0);
   const totalStock = products.reduce((sum, p) => sum + p.totalStock, 0);
-  const originales = products.filter((p) => p.category === "Originales");
+  const originales = products.filter((p) => p.category === "Original");
   const calidad11 = products.filter((p) => p.category === "Calidad 1:1");
   const imitacion = products.filter((p) => p.category === "Imitación");
 
@@ -86,7 +86,7 @@ export default function DashboardHome() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <p className="text-sm text-amber-700 font-medium">Originales</p>
+          <p className="text-sm text-amber-700 font-medium">Original</p>
           <p className="text-2xl font-bold text-amber-800">{originales.length} productos</p>
           <p className="text-xs text-amber-600 mt-1">Stock: {originales.reduce((s, p) => s + p.totalStock, 0)} uds</p>
         </div>
