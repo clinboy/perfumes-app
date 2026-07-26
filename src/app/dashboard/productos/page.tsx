@@ -146,80 +146,48 @@ export default function ProductsPage() {
           )}
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 stagger">
-            {filtered.map((p) => (
-              <div
-                key={p.id}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group"
-              >
-                <div className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-800 truncate group-hover:text-amber-700 transition-colors">
-                        {p.name}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        {p.size && (
-                          <span className="text-xs text-gray-400">{p.size}</span>
-                        )}
-                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${categoryColor(p.category)}`}>
-                          {p.category || "Sin categoría"}
-                        </span>
-                      </div>
-                    </div>
-                    <span className="text-lg font-bold text-gray-800 ml-2">
-                      ${p.price.toLocaleString()}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-gray-500">Stock por sucursal</span>
-                      <span className={`text-sm font-bold ${p.totalStock <= 2 ? "text-red-600" : "text-gray-800"}`}>
-                        {p.totalStock} uds
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {(() => {
-                        const branches = [
-                          { name: "Mercadito", value: p.stockMercadito, bg: "bg-blue-100", text: "text-blue-700" },
-                          { name: "Boutique", value: p.stockBoutique, bg: "bg-green-100", text: "text-green-700" },
-                          { name: "Miravalle", value: p.stockMiravalle, bg: "bg-purple-100", text: "text-purple-700" },
-                          { name: "Diamond", value: p.stockDiamond, bg: "bg-yellow-100", text: "text-yellow-700" },
-                          { name: "Morelos", value: p.stockMorelos, bg: "bg-pink-100", text: "text-pink-700" },
-                        ].filter((s) => s.value > 0);
-                        if (branches.length === 0) return <span className="text-xs text-gray-400 italic">Sin stock</span>;
-                        return branches.map((s) => (
-                          <div key={s.name} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${s.bg} ${s.text}`}>
-                            <span>{s.name}</span>
-                            <span className="font-bold">{s.value}</span>
-                          </div>
-                        ));
-                      })()}
-                    </div>
-                  </div>
+        <div className="space-y-2">
+          {filtered.map((p) => (
+            <div
+              key={p.id}
+              onClick={() => router.push(`/dashboard/productos/${p.id}`)}
+              className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-4 hover:shadow-md hover:border-amber-200 transition-all duration-200 cursor-pointer active:scale-[0.99]"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-semibold text-gray-800 truncate">{p.name}</h3>
+                  {p.size && <span className="text-xs text-gray-400">{p.size}</span>}
                 </div>
-
-                <div className="flex border-t border-gray-100">
-                  <button
-                    onClick={() => router.push(`/dashboard/productos/${p.id}`)}
-                    className="flex-1 py-2.5 text-sm font-medium text-amber-600 hover:bg-amber-50 transition-colors active:bg-amber-100"
-                  >
-                    Editar
-                  </button>
-                  <div className="w-px bg-gray-100" />
-                  <button
-                    onClick={() => handleDelete(p.id, p.name)}
-                    className="flex-1 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors active:bg-red-100"
-                  >
-                    Eliminar
-                  </button>
+                <div className="flex items-center gap-2">
+                  {p.category && (
+                    <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${categoryColor(p.category)}`}>
+                      {p.category}
+                    </span>
+                  )}
+                  <div className="flex flex-wrap gap-1">
+                    {[
+                      { name: "Mercadito", value: p.stockMercadito, bg: "bg-blue-50", text: "text-blue-600" },
+                      { name: "Boutique", value: p.stockBoutique, bg: "bg-green-50", text: "text-green-600" },
+                      { name: "Miravalle", value: p.stockMiravalle, bg: "bg-purple-50", text: "text-purple-600" },
+                      { name: "Diamond", value: p.stockDiamond, bg: "bg-yellow-50", text: "text-yellow-600" },
+                      { name: "Morelos", value: p.stockMorelos, bg: "bg-pink-50", text: "text-pink-600" },
+                    ].filter((s) => s.value > 0).map((s) => (
+                      <span key={s.name} className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${s.bg} ${s.text}`}>
+                        {s.name} {s.value}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </>
+              <div className="text-right flex-shrink-0">
+                <div className="text-lg font-bold text-gray-800">${p.price.toLocaleString()}</div>
+                <div className={`text-xs font-medium ${p.totalStock <= 2 ? "text-red-500" : "text-gray-400"}`}>
+                  {p.totalStock} uds
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
