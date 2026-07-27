@@ -56,7 +56,7 @@ export default function LoginPage() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all duration-200 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-              placeholder="5512345678"
+              placeholder="Tu número de teléfono"
               required
             />
           </div>
