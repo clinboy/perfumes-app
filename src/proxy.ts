@@ -6,6 +6,7 @@ const publicRoutes = ["/login", "/registro"];
 
 const adminOnlyRoutes = [
   "/dashboard/productos/nuevo",
+  "/dashboard/admin",
 ];
 
 export default async function proxy(req: NextRequest) {
