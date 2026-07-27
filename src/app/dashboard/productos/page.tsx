@@ -26,6 +26,10 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   async function loadProducts() {
     setLoading(true);
@@ -44,13 +48,31 @@ export default function ProductsPage() {
     loadProducts();
   }, []);
 
+  const hasActiveFilters = categoryFilter || locationFilter || priceMin || priceMax;
+
   const filtered = useMemo(() => {
     return products.filter((p) => {
       const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
       const matchCategory = !categoryFilter || p.category === categoryFilter;
-      return matchSearch && matchCategory;
+      const matchLocation =
+        !locationFilter ||
+        (locationFilter === "Mercadito" && p.stockMercadito > 0) ||
+        (locationFilter === "Boutique" && p.stockBoutique > 0) ||
+        (locationFilter === "Miravalle" && p.stockMiravalle > 0) ||
+        (locationFilter === "Diamond" && p.stockDiamond > 0) ||
+        (locationFilter === "Morelos" && p.stockMorelos > 0);
+      const matchPriceMin = !priceMin || p.price >= parseFloat(priceMin);
+      const matchPriceMax = !priceMax || p.price <= parseFloat(priceMax);
+      return matchSearch && matchCategory && matchLocation && matchPriceMin && matchPriceMax;
     });
-  }, [products, search, categoryFilter]);
+  }, [products, search, categoryFilter, locationFilter, priceMin, priceMax]);
+
+  function clearFilters() {
+    setCategoryFilter("");
+    setLocationFilter("");
+    setPriceMin("");
+    setPriceMax("");
+  }
 
   async function handleDelete(id: number, name: string) {
     const first = confirm(`¿Eliminar "${name}"?`);
@@ -106,29 +128,89 @@ export default function ProductsPage() {
         )}
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {[
-          { value: "", label: "Todos", count: products.length },
-          { value: "Original", label: "Original", count: products.filter(p => p.category === "Original").length },
-          { value: "Calidad 1:1", label: "Calidad 1:1", count: products.filter(p => p.category === "Calidad 1:1").length },
-          { value: "Imitación", label: "Imitación", count: products.filter(p => p.category === "Imitación").length },
-        ].map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setCategoryFilter(tab.value)}
-            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${
-              categoryFilter === tab.value
-                ? "bg-amber-600 text-white border-amber-600 shadow-sm"
-                : "bg-white text-gray-600 border-gray-200 hover:border-amber-300 hover:text-amber-700"
-            }`}
-          >
-            {tab.label}
-            <span className={`ml-1.5 text-xs ${categoryFilter === tab.value ? "text-amber-200" : "text-gray-400"}`}>
-              {tab.count}
-            </span>
-          </button>
-        ))}
-      </div>
+      <button
+        onClick={() => setShowFilters(!showFilters)}
+        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border ${
+          showFilters || hasActiveFilters
+            ? "bg-amber-50 border-amber-300 text-amber-700"
+            : "bg-white border-gray-200 text-gray-600 hover:border-amber-300 hover:text-amber-700"
+        }`}
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+        </svg>
+        Filtros
+        {hasActiveFilters && (
+          <span className="bg-amber-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+            {[categoryFilter, locationFilter, priceMin, priceMax].filter(Boolean).length}
+          </span>
+        )}
+      </button>
+
+      {showFilters && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-4 animate-slide-up">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">Categoría</label>
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-gray-50 focus:bg-white transition-all"
+              >
+                <option value="">Todas</option>
+                <option value="Original">Original</option>
+                <option value="Calidad 1:1">Calidad 1:1</option>
+                <option value="Imitación">Imitación</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">Sucursal con stock</label>
+              <select
+                value={locationFilter}
+                onChange={(e) => setLocationFilter(e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-gray-50 focus:bg-white transition-all"
+              >
+                <option value="">Todas</option>
+                <option value="Mercadito">Mercadito</option>
+                <option value="Boutique">Boutique</option>
+                <option value="Miravalle">Miravalle</option>
+                <option value="Diamond">Diamond</option>
+                <option value="Morelos">Morelos</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Rango de precios</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={priceMin}
+                onChange={(e) => setPriceMin(e.target.value)}
+                placeholder="Mín"
+                className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-gray-50 focus:bg-white transition-all"
+              />
+              <span className="text-gray-400">—</span>
+              <input
+                type="number"
+                value={priceMax}
+                onChange={(e) => setPriceMax(e.target.value)}
+                placeholder="Máx"
+                className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-gray-50 focus:bg-white transition-all"
+              />
+            </div>
+          </div>
+
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="text-sm text-amber-600 hover:text-amber-700 font-medium"
+            >
+              Limpiar filtros
+            </button>
+          )}
+        </div>
+      )}
 
       {loading ? (
         <div className="flex justify-center py-16">
@@ -141,9 +223,9 @@ export default function ProductsPage() {
         <div className="text-center py-16">
           <div className="text-5xl mb-3">🔍</div>
           <p className="text-gray-500 text-lg">
-            {search || categoryFilter ? "No se encontraron productos" : "No hay productos"}
+            {search || hasActiveFilters ? "No se encontraron productos" : "No hay productos"}
           </p>
-          {!search && !categoryFilter && (
+          {!search && !hasActiveFilters && (
             <Link href="/dashboard/productos/nuevo" className="text-amber-600 hover:underline mt-2 inline-block font-medium">
               Agregar el primero
             </Link>
