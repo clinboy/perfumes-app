@@ -11,6 +11,8 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [role, setRole] = useState<"vendedor" | "admin">("vendedor");
+  const [adminKey, setAdminKey] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -34,7 +36,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, password }),
+        body: JSON.stringify({ name, phone, password, role, adminKey }),
       });
 
       const data = await res.json();
@@ -58,11 +60,53 @@ export default function RegisterPage() {
           <div className="animate-fade-in">
             <img src="/Logo%20Perfumatic.png" alt="Perfumatic" className="h-24 mx-auto mb-4 drop-shadow-sm" />
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Crear cuenta</h1>
-            <p className="text-gray-400 dark:text-gray-500 mt-1 text-sm">Regístrate como vendedor</p>
+            <p className="text-gray-400 dark:text-gray-500 mt-1 text-sm">Elige tu tipo de cuenta</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in-delay-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo de cuenta</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => { setRole("vendedor"); setAdminKey(""); setError(""); }}
+                className={`py-3 rounded-xl text-sm font-medium border-2 transition-all duration-200 ${
+                  role === "vendedor"
+                    ? "border-amber-500 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                    : "border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:border-amber-300"
+                }`}
+              >
+                🧑‍💼 Vendedor
+              </button>
+              <button
+                type="button"
+                onClick={() => { setRole("admin"); setError(""); }}
+                className={`py-3 rounded-xl text-sm font-medium border-2 transition-all duration-200 ${
+                  role === "admin"
+                    ? "border-amber-500 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                    : "border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:border-amber-300"
+                }`}
+              >
+                👑 Admin
+              </button>
+            </div>
+          </div>
+
+          {role === "admin" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Código de administrador</label>
+              <input
+                type="password"
+                value={adminKey}
+                onChange={(e) => setAdminKey(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all duration-200 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                placeholder="Ingresa el código secreto"
+                required={role === "admin"}
+              />
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Nombre completo</label>
             <input

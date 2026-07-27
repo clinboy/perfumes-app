@@ -2,12 +2,18 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth";
 
+const ADMIN_KEY = process.env.ADMIN_SECRET_KEY || "perfumatic-admin-2024";
+
 export async function POST(request: NextRequest) {
   try {
-    const { name, phone, password } = await request.json();
+    const { name, phone, password, role, adminKey } = await request.json();
 
     if (!name || !phone || !password) {
       return Response.json({ error: "Todos los campos son requeridos" }, { status: 400 });
+    }
+
+    if (role === "admin" && adminKey !== ADMIN_KEY) {
+      return Response.json({ error: "Código de administrador incorrecto" }, { status: 403 });
     }
 
     const existing = await prisma.user.findUnique({ where: { phone } });
@@ -17,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     const hashed = await hashPassword(password);
     const user = await prisma.user.create({
-      data: { name, phone, password: hashed },
+      data: { name, phone, password: hashed, role: role === "admin" ? "admin" : "vendedor" },
     });
 
     return Response.json({
