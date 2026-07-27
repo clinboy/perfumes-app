@@ -16,7 +16,6 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
     { href: "/dashboard/productos", label: "Productos", icon: "🧴" },
     { href: "/dashboard/ventas", label: "Ventas", icon: "💰" },
     { href: "/dashboard/movimientos", label: "Movimientos", icon: "📋" },
-    { href: "/dashboard/favoritos", label: "Favoritos", icon: "⭐" },
   ];
 
   async function handleLogout() {

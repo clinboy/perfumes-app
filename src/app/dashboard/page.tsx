@@ -119,23 +119,6 @@ export default function DashboardHome() {
         ))}
       </div>
 
-      {lowStock.length > 0 && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg">⚠️</span>
-            <h2 className="font-semibold text-red-800 dark:text-red-300">Stock bajo</h2>
-          </div>
-          <div className="space-y-2">
-            {lowStock.slice(0, 5).map((p) => (
-              <div key={p.id} className="flex justify-between items-center bg-white/60 dark:bg-slate-800/60 rounded-xl px-3 py-2">
-                <span className="text-sm text-red-700 dark:text-red-300 font-medium">{p.name} {p.size && `(${p.size})`}</span>
-                <span className="text-sm font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/40 px-2 py-0.5 rounded-full">{p.totalStock} uds</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       <Link
         href="/dashboard/productos/nuevo"
         className="block bg-amber-600 hover:bg-amber-700 text-white px-5 py-3 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md text-center active:scale-95"

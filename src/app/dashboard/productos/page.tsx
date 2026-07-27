@@ -18,7 +18,6 @@ interface Product {
   category: string;
   notes: string;
   imageUrl: string | null;
-  isFavorite: number;
 }
 
 export default function ProductsPage() {
@@ -82,16 +81,6 @@ export default function ProductsPage() {
     if (!second) return;
     await fetch(`/api/products/${id}`, { method: "DELETE" });
     setProducts((prev) => prev.filter((p) => p.id !== id));
-  }
-
-  async function toggleFavorite(id: number) {
-    const res = await fetch("/api/products/favorite", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productId: id }),
-    });
-    const data = await res.json();
-    setProducts((prev) => prev.map((p) => p.id === id ? { ...p, isFavorite: data.isFavorite } : p));
   }
 
   const categoryColor = (cat: string) => {
@@ -244,12 +233,6 @@ export default function ProductsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
-                <button
-                  onClick={(e) => { e.stopPropagation(); toggleFavorite(p.id); }}
-                  className={`p-1.5 rounded-lg transition-all ${p.isFavorite ? "text-amber-500" : "text-gray-300 dark:text-gray-600 hover:text-amber-400"}`}
-                >
-                  {p.isFavorite ? "★" : "☆"}
-                </button>
                 <div className="text-right">
                   <div className="text-sm font-bold text-gray-800 dark:text-white">${p.price.toLocaleString()}</div>
                   <div className={`text-[11px] font-medium ${p.totalStock <= 2 ? "text-red-500" : "text-gray-400 dark:text-gray-500"}`}>
