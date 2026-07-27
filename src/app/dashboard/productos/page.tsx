@@ -107,8 +107,8 @@ export default function ProductsPage() {
     <div className="space-y-4 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Productos</h1>
-          <p className="text-sm text-gray-500">{filtered.length} de {products.length} productos</p>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Productos</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{filtered.length} de {products.length} productos</p>
         </div>
         <Link
           href="/dashboard/productos/nuevo"
@@ -119,7 +119,7 @@ export default function ProductsPage() {
       </div>
 
       <div className="relative">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <input
@@ -127,15 +127,10 @@ export default function ProductsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar perfume..."
-          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-white shadow-sm transition-all duration-200 text-sm"
+          className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-white dark:bg-slate-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-sm transition-all duration-200 text-sm"
         />
         {search && (
-          <button
-            onClick={() => setSearch("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-          >
-            ✕
-          </button>
+          <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">✕</button>
         )}
       </div>
 
@@ -143,8 +138,8 @@ export default function ProductsPage() {
         onClick={() => setShowFilters(!showFilters)}
         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border ${
           showFilters || hasActiveFilters
-            ? "bg-amber-50 border-amber-300 text-amber-700"
-            : "bg-white border-gray-200 text-gray-600 hover:border-amber-300 hover:text-amber-700"
+            ? "bg-amber-50 dark:bg-amber-900/30 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300"
+            : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:border-amber-300 hover:text-amber-700"
         }`}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -159,15 +154,11 @@ export default function ProductsPage() {
       </button>
 
       {showFilters && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-4 animate-slide-up">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-4 space-y-4 animate-slide-up">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">Categoría</label>
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-gray-50 focus:bg-white transition-all"
-              >
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Categoría</label>
+              <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all">
                 <option value="">Todas</option>
                 <option value="Original">Original</option>
                 <option value="Calidad 1:1">Calidad 1:1</option>
@@ -175,12 +166,8 @@ export default function ProductsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">Sucursal con stock</label>
-              <select
-                value={locationFilter}
-                onChange={(e) => setLocationFilter(e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-gray-50 focus:bg-white transition-all"
-              >
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Sucursal con stock</label>
+              <select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)} className="w-full px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all">
                 <option value="">Todas</option>
                 <option value="Mercadito">Mercadito</option>
                 <option value="Boutique">Boutique</option>
@@ -190,35 +177,16 @@ export default function ProductsPage() {
               </select>
             </div>
           </div>
-
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Rango de precios</label>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Rango de precios</label>
             <div className="flex items-center gap-2">
-              <input
-                type="number"
-                value={priceMin}
-                onChange={(e) => setPriceMin(e.target.value)}
-                placeholder="Mín"
-                className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-gray-50 focus:bg-white transition-all"
-              />
+              <input type="number" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} placeholder="Mín" className="flex-1 px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" />
               <span className="text-gray-400">—</span>
-              <input
-                type="number"
-                value={priceMax}
-                onChange={(e) => setPriceMax(e.target.value)}
-                placeholder="Máx"
-                className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-gray-50 focus:bg-white transition-all"
-              />
+              <input type="number" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} placeholder="Máx" className="flex-1 px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" />
             </div>
           </div>
-
           {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className="text-sm text-amber-600 hover:text-amber-700 font-medium"
-            >
-              Limpiar filtros
-            </button>
+            <button onClick={clearFilters} className="text-sm text-amber-600 dark:text-amber-400 hover:text-amber-700 font-medium">Limpiar filtros</button>
           )}
         </div>
       )}
@@ -227,19 +195,17 @@ export default function ProductsPage() {
         <div className="flex justify-center py-16">
           <div className="flex flex-col items-center gap-3">
             <div className="animate-spin h-10 w-10 border-4 border-amber-600 border-t-transparent rounded-full" />
-            <p className="text-sm text-gray-500">Cargando productos...</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Cargando productos...</p>
           </div>
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16">
           <div className="text-5xl mb-3">🔍</div>
-          <p className="text-gray-500 text-lg">
+          <p className="text-gray-500 dark:text-gray-400 text-lg">
             {search || hasActiveFilters ? "No se encontraron productos" : "No hay productos"}
           </p>
           {!search && !hasActiveFilters && (
-            <Link href="/dashboard/productos/nuevo" className="text-amber-600 hover:underline mt-2 inline-block font-medium">
-              Agregar el primero
-            </Link>
+            <Link href="/dashboard/productos/nuevo" className="text-amber-600 dark:text-amber-400 hover:underline mt-2 inline-block font-medium">Agregar el primero</Link>
           )}
         </div>
       ) : (
@@ -248,57 +214,57 @@ export default function ProductsPage() {
             <div
               key={p.id}
               onClick={() => router.push(`/dashboard/productos/${p.id}`)}
-              className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-4 hover:shadow-md hover:border-amber-200 transition-all duration-200 cursor-pointer active:scale-[0.99]"
+              className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm p-4 flex items-center gap-3 hover:shadow-md hover:border-amber-200 dark:hover:border-amber-700 transition-all duration-200 cursor-pointer active:scale-[0.99]"
             >
               {p.imageUrl && (
-                <img src={p.imageUrl} alt={p.name} className="w-14 h-14 object-cover rounded-lg flex-shrink-0" />
+                <img src={p.imageUrl} alt={p.name} className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-gray-800 truncate">{p.name}</h3>
-                  {p.size && <span className="text-xs text-gray-400">{p.size}</span>}
+                  <h3 className="font-semibold text-gray-800 dark:text-white truncate">{p.name}</h3>
+                  {p.size && <span className="text-xs text-gray-400 dark:text-gray-500">{p.size}</span>}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   {p.category && (
                     <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${categoryColor(p.category)}`}>
                       {p.category}
                     </span>
                   )}
-                  <div className="flex flex-wrap gap-1">
-                    {[
-                      { name: "Mercadito", value: p.stockMercadito, bg: "bg-blue-50", text: "text-blue-600" },
-                      { name: "Boutique", value: p.stockBoutique, bg: "bg-green-50", text: "text-green-600" },
-                      { name: "Miravalle", value: p.stockMiravalle, bg: "bg-purple-50", text: "text-purple-600" },
-                      { name: "Diamond", value: p.stockDiamond, bg: "bg-yellow-50", text: "text-yellow-600" },
-                      { name: "Morelos", value: p.stockMorelos, bg: "bg-pink-50", text: "text-pink-600" },
-                    ].filter((s) => s.value > 0).map((s) => (
-                      <span key={s.name} className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${s.bg} ${s.text}`}>
-                        {s.name} {s.value}
-                      </span>
-                    ))}
+                  {[
+                    { name: "Mercadito", value: p.stockMercadito, bg: "bg-blue-50 dark:bg-blue-900/30", text: "text-blue-600 dark:text-blue-400" },
+                    { name: "Boutique", value: p.stockBoutique, bg: "bg-green-50 dark:bg-green-900/30", text: "text-green-600 dark:text-green-400" },
+                    { name: "Miravalle", value: p.stockMiravalle, bg: "bg-purple-50 dark:bg-purple-900/30", text: "text-purple-600 dark:text-purple-400" },
+                    { name: "Diamond", value: p.stockDiamond, bg: "bg-yellow-50 dark:bg-yellow-900/30", text: "text-yellow-600 dark:text-yellow-400" },
+                    { name: "Morelos", value: p.stockMorelos, bg: "bg-pink-50 dark:bg-pink-900/30", text: "text-pink-600 dark:text-pink-400" },
+                  ].filter((s) => s.value > 0).map((s) => (
+                    <span key={s.name} className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${s.bg} ${s.text}`}>
+                      {s.name} {s.value}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <button
+                  onClick={(e) => { e.stopPropagation(); toggleFavorite(p.id); }}
+                  className={`p-1.5 rounded-lg transition-all ${p.isFavorite ? "text-amber-500" : "text-gray-300 dark:text-gray-600 hover:text-amber-400"}`}
+                >
+                  {p.isFavorite ? "★" : "☆"}
+                </button>
+                <div className="text-right">
+                  <div className="text-sm font-bold text-gray-800 dark:text-white">${p.price.toLocaleString()}</div>
+                  <div className={`text-[11px] font-medium ${p.totalStock <= 2 ? "text-red-500" : "text-gray-400 dark:text-gray-500"}`}>
+                    {p.totalStock} uds
                   </div>
                 </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDelete(p.id, p.name); }}
+                  className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-red-500 rounded-lg transition-all"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
               </div>
-              <div className="text-right flex-shrink-0">
-                <div className="text-lg font-bold text-gray-800">${p.price.toLocaleString()}</div>
-                <div className={`text-xs font-medium ${p.totalStock <= 2 ? "text-red-500" : "text-gray-400"}`}>
-                  {p.totalStock} uds
-                </div>
-              </div>
-              <button
-                onClick={(e) => { e.stopPropagation(); toggleFavorite(p.id); }}
-                className={`flex-shrink-0 p-2 rounded-lg transition-all duration-200 ${p.isFavorite ? "text-amber-500" : "text-gray-300 dark:text-gray-600 hover:text-amber-400"}`}
-              >
-                {p.isFavorite ? "★" : "☆"}
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleDelete(p.id, p.name); }}
-                className="flex-shrink-0 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
             </div>
           ))}
         </div>
