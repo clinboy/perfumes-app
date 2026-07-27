@@ -18,6 +18,7 @@ interface Product {
   category: string;
   notes: string;
   imageUrl: string | null;
+  isFavorite: number;
 }
 
 export default function ProductsPage() {
@@ -83,12 +84,22 @@ export default function ProductsPage() {
     setProducts((prev) => prev.filter((p) => p.id !== id));
   }
 
+  async function toggleFavorite(id: number) {
+    const res = await fetch("/api/products/favorite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId: id }),
+    });
+    const data = await res.json();
+    setProducts((prev) => prev.map((p) => p.id === id ? { ...p, isFavorite: data.isFavorite } : p));
+  }
+
   const categoryColor = (cat: string) => {
     switch (cat) {
-      case "Original": return "bg-amber-100 text-amber-800 border-amber-200";
-      case "Calidad 1:1": return "bg-blue-100 text-blue-800 border-blue-200";
-      case "Imitación": return "bg-purple-100 text-purple-800 border-purple-200";
-      default: return "bg-gray-100 text-gray-500 border-gray-200";
+      case "Original": return "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700";
+      case "Calidad 1:1": return "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700";
+      case "Imitación": return "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700";
+      default: return "bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600";
     }
   };
 
@@ -275,8 +286,14 @@ export default function ProductsPage() {
                 </div>
               </div>
               <button
+                onClick={(e) => { e.stopPropagation(); toggleFavorite(p.id); }}
+                className={`flex-shrink-0 p-2 rounded-lg transition-all duration-200 ${p.isFavorite ? "text-amber-500" : "text-gray-300 dark:text-gray-600 hover:text-amber-400"}`}
+              >
+                {p.isFavorite ? "★" : "☆"}
+              </button>
+              <button
                 onClick={(e) => { e.stopPropagation(); handleDelete(p.id, p.name); }}
-                className="flex-shrink-0 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
+                className="flex-shrink-0 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
