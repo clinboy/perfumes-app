@@ -2,11 +2,14 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
+  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -14,22 +17,33 @@ export default function LoginPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
+
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
+      return;
+    }
+
+    if (password.length < 4) {
+      setError("La contraseña debe tener al menos 4 caracteres");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, password }),
+        body: JSON.stringify({ name, phone, password }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Error al iniciar sesión");
+        setError(data.error || "Error al registrar");
         return;
       }
 
-      router.push("/dashboard");
+      router.push("/login");
     } catch {
       setError("Error de conexión");
     } finally {
@@ -43,12 +57,24 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="animate-fade-in">
             <img src="/Logo%20Perfumatic.png" alt="Perfumatic" className="h-24 mx-auto mb-4 drop-shadow-sm" />
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Perfumatic</h1>
-            <p className="text-gray-400 dark:text-gray-500 mt-1 text-sm">Sistema de Inventario</p>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Crear cuenta</h1>
+            <p className="text-gray-400 dark:text-gray-500 mt-1 text-sm">Regístrate como vendedor</p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in-delay-2">
+        <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in-delay-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Nombre completo</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all duration-200 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+              placeholder="Tu nombre"
+              required
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Teléfono</label>
             <input
@@ -56,7 +82,7 @@ export default function LoginPage() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all duration-200 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-              placeholder="5512345678"
+              placeholder="Tu número de teléfono"
               required
             />
           </div>
@@ -69,7 +95,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 pr-12 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all duration-200 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="••••••••"
+                placeholder="Crea una contraseña"
                 required
               />
               <button
@@ -91,6 +117,18 @@ export default function LoginPage() {
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Confirmar contraseña</label>
+            <input
+              type={showPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all duration-200 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+              placeholder="Repite tu contraseña"
+              required
+            />
+          </div>
+
           {error && (
             <div className="flex items-center gap-2 text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/30 p-3 rounded-xl" role="alert">
               <span>⚠️</span>
@@ -106,20 +144,20 @@ export default function LoginPage() {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                Entrando...
+                Registrando...
               </span>
             ) : (
-              "Entrar"
+              "Crear cuenta"
             )}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            ¿No tienes cuenta?{" "}
-            <a href="/registro" className="text-amber-600 dark:text-amber-400 hover:text-amber-700 font-medium">
-              Registrarme
-            </a>
+            ¿Ya tienes cuenta?{" "}
+            <Link href="/login" className="text-amber-600 dark:text-amber-400 hover:text-amber-700 font-medium">
+              Iniciar sesión
+            </Link>
           </p>
         </div>
       </div>

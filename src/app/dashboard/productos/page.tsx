@@ -30,6 +30,14 @@ export default function ProductsPage() {
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => { if (d.user) setRole(d.user.role); })
+      .catch(() => {});
+  }, []);
 
   async function loadProducts() {
     setLoading(true);
@@ -99,12 +107,14 @@ export default function ProductsPage() {
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Productos</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">{filtered.length} de {products.length} productos</p>
         </div>
-        <Link
-          href="/dashboard/productos/nuevo"
-          className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md text-center active:scale-95"
-        >
-          + Nuevo
-        </Link>
+        {role === "admin" && (
+          <Link
+            href="/dashboard/productos/nuevo"
+            className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md text-center active:scale-95"
+          >
+            + Nuevo
+          </Link>
+        )}
       </div>
 
       <div className="relative">
@@ -193,7 +203,7 @@ export default function ProductsPage() {
           <p className="text-gray-500 dark:text-gray-400 text-lg">
             {search || hasActiveFilters ? "No se encontraron productos" : "No hay productos"}
           </p>
-          {!search && !hasActiveFilters && (
+          {!search && !hasActiveFilters && role === "admin" && (
             <Link href="/dashboard/productos/nuevo" className="text-amber-600 dark:text-amber-400 hover:underline mt-2 inline-block font-medium">Agregar el primero</Link>
           )}
         </div>
@@ -202,8 +212,8 @@ export default function ProductsPage() {
           {filtered.map((p) => (
             <div
               key={p.id}
-              onClick={() => router.push(`/dashboard/productos/${p.id}`)}
               className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm p-4 flex items-center gap-3 hover:shadow-md hover:border-amber-200 dark:hover:border-amber-700 transition-all duration-200 cursor-pointer active:scale-[0.99]"
+              onClick={() => role === "admin" && router.push(`/dashboard/productos/${p.id}`)}
             >
               {p.imageUrl && (
                 <img src={p.imageUrl} alt={p.name} className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
@@ -239,14 +249,16 @@ export default function ProductsPage() {
                     {p.totalStock} uds
                   </div>
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleDelete(p.id, p.name); }}
-                  className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-red-500 rounded-lg transition-all"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
+                {role === "admin" && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDelete(p.id, p.name); }}
+                    className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-red-500 rounded-lg transition-all"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                )}
               </div>
             </div>
           ))}

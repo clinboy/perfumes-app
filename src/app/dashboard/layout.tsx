@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThemeProvider, useTheme } from "@/lib/theme";
 
 function DashboardInner({ children }: { children: React.ReactNode }) {
@@ -10,6 +10,22 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const { dark, toggle } = useTheme();
+  const [role, setRole] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("");
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.user) {
+          setRole(d.user.role);
+          setUserName(d.user.name);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const isAdmin = role === "admin";
 
   const navItems = [
     { href: "/dashboard", label: "Inicio", icon: "📊" },
@@ -51,6 +67,9 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
+            <span className="text-[11px] font-bold bg-white/20 px-2.5 py-1 rounded-full text-white/90">
+              {isAdmin ? "👑 Admin" : "🧑‍💼 " + userName}
+            </span>
             <button
               onClick={toggle}
               className="ml-1 p-2 rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-all"
@@ -67,6 +86,9 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-1 md:hidden">
+            <span className="text-[10px] font-bold bg-white/20 px-2 py-1 rounded-full">
+              {isAdmin ? "👑 Admin" : "🧑‍💼 " + userName}
+            </span>
             <button
               onClick={toggle}
               className="text-xl p-2"
@@ -130,11 +152,11 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             )},
-            { href: "/dashboard/productos/nuevo", label: "Nuevo", icon: (
+            ...(isAdmin ? [{ href: "/dashboard/productos/nuevo", label: "Nuevo", icon: (
               <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
-            ), highlight: true },
+            ), highlight: true }] : []),
             { href: "/dashboard/ventas", label: "Ventas", icon: (
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
