@@ -31,6 +31,7 @@ export default function ProductsPage() {
   const [priceMax, setPriceMax] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [role, setRole] = useState<string | null>(null);
+  const [stockFilter, setStockFilter] = useState<"" | "low" | "out">("");
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -56,7 +57,7 @@ export default function ProductsPage() {
     loadProducts();
   }, []);
 
-  const hasActiveFilters = categoryFilter || locationFilter || priceMin || priceMax;
+  const hasActiveFilters = categoryFilter || locationFilter || priceMin || priceMax || stockFilter;
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -71,15 +72,49 @@ export default function ProductsPage() {
         (locationFilter === "Morelos" && p.stockMorelos > 0);
       const matchPriceMin = !priceMin || p.price >= parseFloat(priceMin);
       const matchPriceMax = !priceMax || p.price <= parseFloat(priceMax);
-      return matchSearch && matchCategory && matchLocation && matchPriceMin && matchPriceMax;
+      const matchStock =
+        stockFilter === "low" ? p.totalStock > 0 && p.totalStock <= 2 :
+        stockFilter === "out" ? p.totalStock === 0 :
+        true;
+      return matchSearch && matchCategory && matchLocation && matchPriceMin && matchPriceMax && matchStock;
     });
-  }, [products, search, categoryFilter, locationFilter, priceMin, priceMax]);
+  }, [products, search, categoryFilter, locationFilter, priceMin, priceMax, stockFilter]);
+
+  const lowStockCount = products.filter((p) => p.totalStock > 0 && p.totalStock <= 2).length;
+  const outStockCount = products.filter((p) => p.totalStock === 0).length;
 
   function clearFilters() {
     setCategoryFilter("");
     setLocationFilter("");
     setPriceMin("");
     setPriceMax("");
+    setStockFilter("");
+  }
+
+  function exportCSV() {
+    const rows = [
+      ["Nombre", "Tamaño", "Categoría", "Precio", "Total", "Mercadito", "Boutique", "Miravalle", "Diamond", "Morelos"],
+      ...filtered.map((p) => [
+        p.name,
+        p.size || "",
+        p.category || "",
+        p.price,
+        p.totalStock,
+        p.stockMercadito,
+        p.stockBoutique,
+        p.stockMiravalle,
+        p.stockDiamond,
+        p.stockMorelos,
+      ]),
+    ];
+    const csv = "\uFEFF" + rows.map((r) => r.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "inventario.csv";
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   async function handleDelete(id: number, name: string) {
@@ -107,15 +142,48 @@ export default function ProductsPage() {
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Productos</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">{filtered.length} de {products.length} productos</p>
         </div>
-        {role === "admin" && (
-          <Link
-            href="/dashboard/productos/nuevo"
-            className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md text-center active:scale-95"
+        <div className="flex items-center gap-2">
+          <button
+            onClick={exportCSV}
+            className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 hover:border-amber-300 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm"
           >
-            + Nuevo
-          </Link>
-        )}
+            ⬇️ Excel
+          </button>
+          {role === "admin" && (
+            <Link
+              href="/dashboard/productos/nuevo"
+              className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md text-center active:scale-95"
+            >
+              + Nuevo
+            </Link>
+          )}
+        </div>
       </div>
+
+      {lowStockCount > 0 && (
+        <button
+          onClick={() => setStockFilter(stockFilter === "low" ? "" : "low")}
+          className={`flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border ${
+            stockFilter === "low"
+              ? "bg-amber-600 text-white border-amber-600"
+              : "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300"
+          }`}
+        >
+          ⚠️ Stock bajo ({lowStockCount}) — quedan 2 o menos unidades
+        </button>
+      )}
+      {outStockCount > 0 && (
+        <button
+          onClick={() => setStockFilter(stockFilter === "out" ? "" : "out")}
+          className={`flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border ${
+            stockFilter === "out"
+              ? "bg-red-600 text-white border-red-600"
+              : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400"
+          }`}
+        >
+          🚫 Sin stock ({outStockCount}) — agotados
+        </button>
+      )}
 
       <div className="relative">
         <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -228,6 +296,12 @@ export default function ProductsPage() {
                     <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${categoryColor(p.category)}`}>
                       {p.category}
                     </span>
+                  )}
+                  {p.totalStock === 0 && (
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">Sin stock</span>
+                  )}
+                  {p.totalStock > 0 && p.totalStock <= 2 && (
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">¡Stock bajo!</span>
                   )}
                   {[
                     { name: "Mercadito", value: p.stockMercadito, bg: "bg-blue-50 dark:bg-blue-900/30", text: "text-blue-600 dark:text-blue-400" },

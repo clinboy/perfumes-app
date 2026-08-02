@@ -38,6 +38,16 @@ export default function MovimientosPage() {
   const [quantity, setQuantity] = useState("1");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => { if (d.user) setRole(d.user.role); })
+      .catch(() => {});
+  }, []);
+
+  const isAdmin = role === "admin";
 
   useEffect(() => {
     Promise.all([
@@ -100,7 +110,7 @@ export default function MovimientosPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm active:scale-95"
+          className={`bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm active:scale-95 ${isAdmin ? "" : "hidden"}`}
         >
           + Mover
         </button>

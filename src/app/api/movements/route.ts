@@ -30,9 +30,13 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { productId, from, to, quantity, notes } = body;
   const session = await getSession();
-  const client = getClient();
 
-  const userId = session?.userId || 0;
+  if (!session || session.role !== "admin") {
+    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+  }
+
+  const client = getClient();
+  const userId = session.userId;
 
   await client.execute({
     sql: "INSERT INTO Movement (productId, fromLocation, toLocation, quantity, notes, userId) VALUES (?, ?, ?, ?, ?, ?)",

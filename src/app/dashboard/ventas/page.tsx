@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 interface Product {
   id: number;
@@ -47,6 +47,16 @@ export default function VentasPage() {
   const [payingId, setPayingId] = useState<number | null>(null);
   const [payAmount, setPayAmount] = useState("");
   const [payError, setPayError] = useState("");
+  const [role, setRole] = useState<string | null>(null);
+  const [period, setPeriod] = useState<"today" | "week" | "month" | "all">("month");
+  const [locFilter, setLocFilter] = useState("");
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => { if (d.user) setRole(d.user.role); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -117,27 +127,162 @@ export default function VentasPage() {
     }
   }
 
-  const todaySales = sales.filter((s) => {
-    const d = new Date(s.createdAt);
+  async function handleDeleteSale(s: Sale) {
+    const first = confirm(`¿Eliminar la venta de "${s.productName}"?`);
+    if (!first) return;
+    const second = confirm(`Se devolverán ${s.quantity} ud(s) a ${s.location} y se restará de tus ingresos. ¿Continuar?`);
+    if (!second) return;
+    await fetch(`/api/sales/${s.id}`, { method: "DELETE" });
+    await loadData();
+  }
+
+  const filteredSales = useMemo(() => {
     const now = new Date();
-    return d.toDateString() === now.toDateString();
+    return sales.filter((s) => {
+      if (locFilter && s.location !== locFilter) return false;
+      const d = new Date(s.createdAt);
+      if (period === "today") return d.toDateString() === now.toDateString();
+      if (period === "week") return (now.getTime() - d.getTime()) <= 7 * 24 * 60 * 60 * 1000;
+      if (period === "month") return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      return true;
+    });
+  }, [sales, period, locFilter]);
+
+  const periodTotal = filteredSales.reduce((sum, s) => sum + s.price * s.quantity, 0);
+  const periodCount = filteredSales.length;
+  const periodApartados = filteredSales.filter((s) => s.paymentType === "pagos" && s.amountPaid < s.price * s.quantity);
+
+  const byLocation = LOCATIONS.map((l) => {
+    const locSales = filteredSales.filter((s) => s.location === l);
+    return { location: l, count: locSales.length, total: locSales.reduce((sum, s) => sum + s.price * s.quantity, 0) };
   });
-  const todayTotal = todaySales.reduce((sum, s) => sum + s.price * s.quantity, 0);
+
   const pendingApartados = sales.filter((s) => s.paymentType === "pagos" && s.amountPaid < s.price * s.quantity);
+
+  function exportCSV() {
+    const rows = [
+      ["Fecha", "Producto", "Cantidad", "Precio", "Total", "Sucursal", "Tipo", "Pagado", "Cliente", "Vendedor"],
+      ...filteredSales.map((s) => [
+        new Date(s.createdAt).toLocaleString(),
+        s.productName,
+        s.quantity,
+        s.price,
+        s.price * s.quantity,
+        s.location,
+        s.paymentType === "pagos" ? "Apartado/Pagos" : "Contado",
+        s.amountPaid,
+        s.clientName || "",
+        s.userName || "",
+      ]),
+    ];
+    const csv = "\uFEFF" + rows.map((r) => r.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ventas-${period}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-16">
+        <div className="animate-spin h-10 w-10 border-4 border-amber-600 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Ventas</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Hoy: {todaySales.length} ventas — ${todayTotal.toLocaleString()}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Período: {periodCount} ventas — ${periodTotal.toLocaleString()}</p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm active:scale-95"
-        >
-          + Vender
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={exportCSV}
+            className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 hover:border-amber-300 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl font-medium transition-all text-sm"
+          >
+            ⬇️ Excel
+          </button>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm active:scale-95"
+          >
+            + Vender
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 p-4 space-y-3">
+        <div className="flex flex-wrap gap-2">
+          {[
+            { key: "today", label: "Hoy" },
+            { key: "week", label: "7 días" },
+            { key: "month", label: "Este mes" },
+            { key: "all", label: "Todo" },
+          ].map((p) => (
+            <button
+              key={p.key}
+              onClick={() => setPeriod(p.key as typeof period)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                period === p.key
+                  ? "bg-amber-600 text-white"
+                  : "bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-amber-900/30"
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+          <select
+            value={locFilter}
+            onChange={(e) => setLocFilter(e.target.value)}
+            className="ml-auto px-3 py-1.5 rounded-lg text-xs border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-600 dark:text-gray-300 outline-none"
+          >
+            <option value="">Todas las sucursales</option>
+            {LOCATIONS.map((l) => <option key={l} value={l}>{l}</option>)}
+          </select>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Ingresos del período</p>
+            <p className="text-xl font-bold text-green-700 dark:text-green-400 mt-0.5">${periodTotal.toLocaleString()}</p>
+          </div>
+          <div className="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Ventas</p>
+            <p className="text-xl font-bold text-blue-700 dark:text-blue-400 mt-0.5">{periodCount}</p>
+          </div>
+          <div className="bg-amber-50 dark:bg-amber-900/30 rounded-xl p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Apartados pendientes</p>
+            <p className="text-xl font-bold text-amber-700 dark:text-amber-400 mt-0.5">{periodApartados.length}</p>
+          </div>
+          <div className="bg-gray-50 dark:bg-slate-700 rounded-xl p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Promedio por venta</p>
+            <p className="text-xl font-bold text-gray-800 dark:text-white mt-0.5">
+              ${periodCount ? Math.round(periodTotal / periodCount).toLocaleString() : "0"}
+            </p>
+          </div>
+        </div>
+
+        {byLocation.some((l) => l.count > 0) && (
+          <div className="space-y-1.5">
+            {byLocation.filter((l) => l.count > 0).map((l) => (
+              <div key={l.location} className="flex items-center gap-2 text-xs">
+                <span className="w-20 text-gray-500 dark:text-gray-400 font-medium">{l.location}</span>
+                <div className="flex-1 h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-amber-500 rounded-full"
+                    style={{ width: `${periodTotal ? (l.total / periodTotal) * 100 : 0}%` }}
+                  />
+                </div>
+                <span className="text-gray-600 dark:text-gray-300 w-24 text-right">${l.total.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {pendingApartados.length > 0 && (
@@ -349,14 +494,15 @@ export default function VentasPage() {
       )}
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 overflow-hidden">
-        <div className="p-4 border-b border-gray-100 dark:border-slate-700">
+        <div className="p-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
           <h2 className="font-semibold text-gray-800 dark:text-white">Historial de ventas</h2>
+          <span className="text-xs text-gray-400">{filteredSales.length} ventas</span>
         </div>
-        {sales.length === 0 ? (
-          <div className="p-8 text-center text-gray-400">Sin ventas registradas</div>
+        {filteredSales.length === 0 ? (
+          <div className="p-8 text-center text-gray-400">Sin ventas en este período</div>
         ) : (
           <div className="divide-y divide-gray-50 dark:divide-slate-700">
-            {sales.slice(0, 50).map((s) => {
+            {filteredSales.slice(0, 100).map((s) => {
               const total = s.price * s.quantity;
               const isApartado = s.paymentType === "pagos";
               const isPaid = !isApartado || s.amountPaid >= total;
@@ -370,7 +516,7 @@ export default function VentasPage() {
                       <div className="text-sm font-medium text-gray-800 dark:text-white truncate">
                         {s.clientName ? `${s.clientName} — ` : ""}{s.productName}
                       </div>
-                      <div className="text-xs text-gray-400">{s.location} · {s.quantity} ud{s.quantity > 1 ? "s" : ""}</div>
+                      <div className="text-xs text-gray-400">{s.location} · {s.quantity} ud{s.quantity > 1 ? "s" : ""}{s.userName ? ` · ${s.userName}` : ""}</div>
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
                       <div className={`text-sm font-bold ${isPaid ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}>
@@ -389,6 +535,17 @@ export default function VentasPage() {
                         <span className="text-[10px] font-bold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">Contado</span>
                       )}
                     </div>
+                    {role === "admin" && (
+                      <button
+                        onClick={() => handleDeleteSale(s)}
+                        className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-red-500 rounded-lg transition-all flex-shrink-0"
+                        title="Eliminar venta"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                   {isApartado && !isPaid && (
                     <div className="mt-2 flex items-center gap-3">
