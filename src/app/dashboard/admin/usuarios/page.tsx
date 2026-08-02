@@ -22,6 +22,9 @@ interface Activity {
   from?: string;
   to?: string;
   userName?: string;
+  paymentType?: string;
+  amountPaid?: number;
+  clientName?: string;
   createdAt: string;
 }
 
@@ -193,20 +196,35 @@ export default function AdminUsersPage() {
           {recentSales.length === 0 ? (
             <p className="text-gray-500 dark:text-gray-400 text-center py-8">Aún no hay ventas registradas</p>
           ) : (
-            recentSales.map((s) => (
-              <div key={s.id} className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm p-3 flex items-center justify-between transition-colors hover:shadow-md">
-                <div className="min-w-0">
-                  <p className="font-medium text-gray-800 dark:text-white text-sm truncate">🧴 {s.productName}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                    {s.userName || "Desconocido"} · 📍 {s.location} · {s.quantity} uds
-                  </p>
+            recentSales.map((s) => {
+              const total = Number(s.price) * s.quantity;
+              const isApartado = s.paymentType === "pagos";
+              const isPaid = !isApartado || (s.amountPaid ?? 0) >= total;
+              const remaining = Math.max(total - (s.amountPaid ?? 0), 0);
+              return (
+                <div key={s.id} className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm p-3 flex items-center justify-between transition-colors hover:shadow-md">
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-800 dark:text-white text-sm truncate">
+                      🧴 {s.clientName ? `${s.clientName} — ` : ""}{s.productName}
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                      {s.userName || "Desconocido"} · 📍 {s.location} · {s.quantity} uds
+                    </p>
+                  </div>
+                  <div className="text-right flex-shrink-0 ml-3">
+                    <p className={`font-bold text-sm ${isPaid ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}>
+                      ${total.toLocaleString()}
+                    </p>
+                    {isApartado && !isPaid && (
+                      <span className="text-[10px] font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded-full">
+                        ${remaining.toLocaleString()} restante
+                      </span>
+                    )}
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{formatDate(s.createdAt)}</p>
+                  </div>
                 </div>
-                <div className="text-right flex-shrink-0 ml-3">
-                  <p className="font-bold text-green-600 dark:text-green-400 text-sm">${(Number(s.price) * s.quantity).toLocaleString()}</p>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500">{formatDate(s.createdAt)}</p>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       )}

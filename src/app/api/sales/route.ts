@@ -28,21 +28,25 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { productId, quantity, price, location } = body;
+  const { productId, quantity, price, location, paymentType, amountPaid, clientName } = body;
   const session = await getSession();
   const client = getClient();
 
   const userId = session?.userId || 0;
+  const qty = quantity || 1;
+  const total = price * qty;
+  const type = paymentType === "pagos" ? "pagos" : "contado";
+  const paid = type === "pagos" ? Math.min(amountPaid || 0, total) : total;
 
   await client.execute({
-    sql: "INSERT INTO Sale (productId, quantity, price, location, userId) VALUES (?, ?, ?, ?, ?)",
-    args: [productId, quantity || 1, price, location, userId],
+    sql: "INSERT INTO Sale (productId, quantity, price, location, userId, paymentType, amountPaid, clientName) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    args: [productId, qty, price, location, userId, type, paid, clientName || ""],
   });
 
   const stockCol = `stock${location}`;
   await client.execute({
     sql: `UPDATE Product SET ${stockCol} = MAX(0, ${stockCol} - ?), totalStock = MAX(0, totalStock - ?) WHERE id = ?`,
-    args: [quantity || 1, quantity || 1, productId],
+    args: [qty, qty, productId],
   });
 
   return NextResponse.json({ success: true });
