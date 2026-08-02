@@ -27,8 +27,6 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
-  const [priceMin, setPriceMin] = useState("");
-  const [priceMax, setPriceMax] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<"name" | "price-asc" | "price-desc" | "">("");
   const [role, setRole] = useState<string | null>(null);
@@ -57,7 +55,7 @@ export default function ProductsPage() {
     loadProducts();
   }, []);
 
-  const hasActiveFilters = categoryFilter || locationFilter || priceMin || priceMax;
+  const hasActiveFilters = categoryFilter || locationFilter;
 
   const filtered = useMemo(() => {
     let list = products.filter((p) => {
@@ -70,9 +68,7 @@ export default function ProductsPage() {
         (locationFilter === "Miravalle" && p.stockMiravalle > 0) ||
         (locationFilter === "Diamond" && p.stockDiamond > 0) ||
         (locationFilter === "Morelos" && p.stockMorelos > 0);
-      const matchPriceMin = !priceMin || p.price >= parseFloat(priceMin);
-      const matchPriceMax = !priceMax || p.price <= parseFloat(priceMax);
-      return matchSearch && matchCategory && matchLocation && matchPriceMin && matchPriceMax;
+      return matchSearch && matchCategory && matchLocation;
     });
 
     if (sortBy === "name") {
@@ -89,13 +85,11 @@ export default function ProductsPage() {
     }
 
     return list;
-  }, [products, search, categoryFilter, locationFilter, priceMin, priceMax, sortBy]);
+  }, [products, search, categoryFilter, locationFilter, sortBy]);
 
   function clearFilters() {
     setCategoryFilter("");
     setLocationFilter("");
-    setPriceMin("");
-    setPriceMax("");
   }
 
   function exportCSV() {
@@ -219,7 +213,7 @@ export default function ProductsPage() {
           Filtros
           {hasActiveFilters && (
             <span className="bg-amber-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-              {[categoryFilter, locationFilter, priceMin, priceMax].filter(Boolean).length}
+              {[categoryFilter, locationFilter].filter(Boolean).length}
             </span>
           )}
         </button>
@@ -247,14 +241,6 @@ export default function ProductsPage() {
                 <option value="Diamond">Diamond</option>
                 <option value="Morelos">Morelos</option>
               </select>
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Rango de precios</label>
-            <div className="flex items-center gap-2">
-              <input type="number" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} placeholder="Mín" className="flex-1 px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" />
-              <span className="text-gray-400">—</span>
-              <input type="number" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} placeholder="Máx" className="flex-1 px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" />
             </div>
           </div>
           {hasActiveFilters && (
