@@ -72,6 +72,10 @@ export default function VentasPage() {
     setLoading(false);
   }
 
+  const availableLocations = selectedProduct
+    ? LOCATIONS.filter((l) => (selectedProduct as unknown as Record<string, number>)[`stock${l}`] > 0)
+    : LOCATIONS;
+
   const availableStock = selectedProduct
     ? (selectedProduct as unknown as Record<string, number>)[`stock${location}`] || 0
     : 0;
@@ -330,6 +334,11 @@ export default function VentasPage() {
               onChange={(e) => {
                 const p = products.find((x) => x.id === parseInt(e.target.value));
                 setSelectedProduct(p || null);
+                const firstLoc = p
+                  ? LOCATIONS.find((l) => (p as unknown as Record<string, number>)[`stock${l}`] > 0)
+                  : undefined;
+                setLocation(firstLoc || "Mercadito");
+                setQuantity("1");
               }}
               className="w-full px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 focus:ring-2 focus:ring-amber-500 outline-none text-gray-800 dark:text-white"
             >
@@ -340,31 +349,33 @@ export default function VentasPage() {
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Sucursal</label>
-              <select
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 focus:ring-2 focus:ring-amber-500 outline-none text-gray-800 dark:text-white"
-              >
-                {LOCATIONS.map((l) => (
-                  <option key={l} value={l}>{l}</option>
-                ))}
-              </select>
+          {selectedProduct && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Sucursal</label>
+                <select
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 focus:ring-2 focus:ring-amber-500 outline-none text-gray-800 dark:text-white"
+                >
+                  {availableLocations.map((l) => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Cantidad (disponible: {availableStock})</label>
+                <input
+                  type="number"
+                  min="1"
+                  max={availableStock}
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 focus:ring-2 focus:ring-amber-500 outline-none text-gray-800 dark:text-white"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Cantidad (disponible: {availableStock})</label>
-              <input
-                type="number"
-                min="1"
-                max={availableStock}
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 focus:ring-2 focus:ring-amber-500 outline-none text-gray-800 dark:text-white"
-              />
-            </div>
-          </div>
+          )}
 
           <div>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Tipo de pago</label>
