@@ -17,13 +17,21 @@ async function getSession() {
   return verifyToken(token);
 }
 
-function isSuperAdmin(session: { role: string } | null) {
-  return session?.role === "superadmin";
+async function isSuperAdmin() {
+  const session = await getSession();
+  if (!session) return false;
+  const client = getClient();
+  const result = await client.execute({
+    sql: "SELECT role FROM User WHERE id = ?",
+    args: [session.userId],
+  });
+  if (result.rows.length === 0) return false;
+  return String(result.rows[0].role) === "superadmin";
 }
 
 export async function GET() {
-  const session = await getSession();
-  if (!isSuperAdmin(session)) {
+  const authorized = await isSuperAdmin();
+  if (!authorized) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
@@ -38,7 +46,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const session = await getSession();
-  if (!isSuperAdmin(session)) {
+  const authorized = await isSuperAdmin();
+  if (!session || !authorized) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
@@ -60,7 +69,7 @@ export async function POST(request: Request) {
 
   await client.execute({
     sql: "INSERT INTO Purchase (productId, userId, quantity, unitCost, location, notes) VALUES (?, ?, ?, ?, ?, ?)",
-    args: [productId, session!.userId, qty, cost, location || "", notes || ""],
+    args: [productId, session.userId, qty, cost, location || "", notes || ""],
   });
 
   const stockCol = `stock${location || ""}`;
