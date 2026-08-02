@@ -76,7 +76,12 @@ export default function ProductsPage() {
     });
 
     if (sortBy === "name") {
-      list = [...list].sort((a, b) => a.name.localeCompare(b.name, "es"));
+      list = [...list].sort((a, b) => {
+        const aIsLetter = /^[A-Za-zÁÉÍÓÚÑáéíóúñ]/.test(a.name);
+        const bIsLetter = /^[A-Za-zÁÉÍÓÚÑáéíóúñ]/.test(b.name);
+        if (aIsLetter !== bIsLetter) return aIsLetter ? -1 : 1;
+        return a.name.localeCompare(b.name, "es");
+      });
     } else if (sortBy === "price-asc") {
       list = [...list].sort((a, b) => a.price - b.price);
     } else if (sortBy === "price-desc") {
@@ -190,10 +195,10 @@ export default function ProductsPage() {
                 : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300"
             }`}
           >
-            <option value="">Ordenar por...</option>
-            <option value="name">A-Z (alfabético)</option>
-            <option value="price-asc">Precio: menor a mayor</option>
-            <option value="price-desc">Precio: mayor a menor</option>
+            <option value="" className="bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200">Ordenar por...</option>
+            <option value="name" className="bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200">A-Z (alfabético)</option>
+            <option value="price-asc" className="bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200">Precio: menor a mayor</option>
+            <option value="price-desc" className="bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200">Precio: mayor a menor</option>
           </select>
           <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
