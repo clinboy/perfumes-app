@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
@@ -84,7 +84,7 @@ export default function ProductsPage() {
 
   function exportCSV() {
     const rows = [
-      ["Nombre", "Tamaño", "Categoría", "Precio", "Total", "Mercadito", "Boutique", "Miravalle", "Diamond", "Morelos"],
+      ["Nombre", "TamaÃ±o", "CategorÃ­a", "Precio", "Total", "Mercadito", "Boutique", "Miravalle", "Diamond", "Morelos"],
       ...filtered.map((p) => [
         p.name,
         p.size || "",
@@ -107,11 +107,12 @@ export default function ProductsPage() {
     a.click();
     URL.revokeObjectURL(url);
   }
+  const isAdmin = role === "admin" || role === "superadmin";
 
   async function handleDelete(id: number, name: string) {
-    const first = confirm(`¿Eliminar "${name}"?`);
+    const first = confirm(`Â¿Eliminar "${name}"?`);
     if (!first) return;
-    const second = confirm(`¿Estás seguro? Esta acción no se puede deshacer.`);
+    const second = confirm(`Â¿EstÃ¡s seguro? Esta acciÃ³n no se puede deshacer.`);
     if (!second) return;
     await fetch(`/api/products/${id}`, { method: "DELETE" });
     setProducts((prev) => prev.filter((p) => p.id !== id));
@@ -121,7 +122,7 @@ export default function ProductsPage() {
     switch (cat) {
       case "Original": return "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700";
       case "Calidad 1:1": return "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700";
-      case "Imitación": return "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700";
+      case "ImitaciÃ³n": return "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700";
       default: return "bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600";
     }
   };
@@ -138,9 +139,9 @@ export default function ProductsPage() {
             onClick={exportCSV}
             className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 hover:border-amber-300 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm"
           >
-            ⬇️ Excel
+            â¬‡ï¸ Excel
           </button>
-          {role === "admin" && (
+          {isAdmin && (
             <Link
               href="/dashboard/productos/nuevo"
               className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md text-center active:scale-95"
@@ -163,7 +164,7 @@ export default function ProductsPage() {
           className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-white dark:bg-slate-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-sm transition-all duration-200 text-sm"
         />
         {search && (
-          <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">✕</button>
+          <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">âœ•</button>
         )}
       </div>
 
@@ -190,12 +191,12 @@ export default function ProductsPage() {
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-4 space-y-4 animate-slide-up">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Categoría</label>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">CategorÃ­a</label>
               <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all">
                 <option value="">Todas</option>
                 <option value="Original">Original</option>
                 <option value="Calidad 1:1">Calidad 1:1</option>
-                <option value="Imitación">Imitación</option>
+                <option value="ImitaciÃ³n">ImitaciÃ³n</option>
               </select>
             </div>
             <div>
@@ -213,9 +214,9 @@ export default function ProductsPage() {
           <div>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Rango de precios</label>
             <div className="flex items-center gap-2">
-              <input type="number" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} placeholder="Mín" className="flex-1 px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" />
-              <span className="text-gray-400">—</span>
-              <input type="number" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} placeholder="Máx" className="flex-1 px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" />
+              <input type="number" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} placeholder="MÃ­n" className="flex-1 px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" />
+              <span className="text-gray-400">â€”</span>
+              <input type="number" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} placeholder="MÃ¡x" className="flex-1 px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" />
             </div>
           </div>
           {hasActiveFilters && (
@@ -233,11 +234,11 @@ export default function ProductsPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16">
-          <div className="text-5xl mb-3">🔍</div>
+          <div className="text-5xl mb-3">ðŸ”</div>
           <p className="text-gray-500 dark:text-gray-400 text-lg">
             {search || hasActiveFilters ? "No se encontraron productos" : "No hay productos"}
           </p>
-          {!search && !hasActiveFilters && role === "admin" && (
+          {!search && !hasActiveFilters && isAdmin && (
             <Link href="/dashboard/productos/nuevo" className="text-amber-600 dark:text-amber-400 hover:underline mt-2 inline-block font-medium">Agregar el primero</Link>
           )}
         </div>
@@ -247,7 +248,7 @@ export default function ProductsPage() {
             <div
               key={p.id}
               className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm p-4 flex items-center gap-3 hover:shadow-md hover:border-amber-200 dark:hover:border-amber-700 transition-all duration-200 cursor-pointer active:scale-[0.99]"
-              onClick={() => role === "admin" && router.push(`/dashboard/productos/${p.id}`)}
+              onClick={() => isAdmin && router.push(`/dashboard/productos/${p.id}`)}
             >
               {p.imageUrl && (
                 <img src={p.imageUrl} alt={p.name} className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
@@ -286,7 +287,7 @@ export default function ProductsPage() {
                     {p.totalStock} uds
                   </div>
                 </div>
-                {role === "admin" && (
+                {isAdmin && (
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(p.id, p.name); }}
                     className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-red-500 rounded-lg transition-all"

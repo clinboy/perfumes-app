@@ -157,12 +157,17 @@ export default function AdminUsersPage() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-800 dark:text-white flex items-center gap-2 truncate">
                       {u.name}
+                      {u.role === "superadmin" && (
+                        <span className="text-[10px] font-bold bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full flex-shrink-0">
+                          👑 Super Admin
+                        </span>
+                      )}
                       {u.role === "admin" && (
                         <span className="text-[10px] font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full flex-shrink-0">
                           👑 Admin
                         </span>
                       )}
-                      {u.role !== "admin" && (
+                      {u.role !== "admin" && u.role !== "superadmin" && (
                         <span className="text-[10px] font-bold bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full flex-shrink-0">
                           🧑‍💼 Vendedor
                         </span>

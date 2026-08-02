@@ -9,12 +9,17 @@ const adminOnlyRoutes = [
   "/dashboard/admin",
 ];
 
+const superAdminOnlyRoutes = [
+  "/dashboard/finanzas",
+];
+
 export default async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
   const isProtectedRoute = protectedRoutes.some((r) => path.startsWith(r));
   const isPublicRoute = publicRoutes.some((r) => path.startsWith(r));
   const isAdminOnly = adminOnlyRoutes.some((r) => path.startsWith(r));
+  const isSuperAdminOnly = superAdminOnlyRoutes.some((r) => path.startsWith(r));
 
   const token = req.cookies.get("session")?.value;
   const session = token ? verifyToken(token) : null;
@@ -28,6 +33,10 @@ export default async function proxy(req: NextRequest) {
   }
 
   if (isAdminOnly && session?.role === "vendedor") {
+    return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
+  }
+
+  if (isSuperAdminOnly && session?.role !== "superadmin") {
     return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
   }
 

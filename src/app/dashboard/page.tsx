@@ -155,7 +155,7 @@ export default function DashboardHome() {
         </Link>
       )}
 
-      {user?.role === "admin" && (
+      {(user?.role === "admin" || user?.role === "superadmin") && (
         <Link
           href="/dashboard/productos/nuevo"
           className="block bg-amber-600 hover:bg-amber-700 text-white px-5 py-3 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md text-center active:scale-95"

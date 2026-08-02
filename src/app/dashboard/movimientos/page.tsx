@@ -47,7 +47,7 @@ export default function MovimientosPage() {
       .catch(() => {});
   }, []);
 
-  const isAdmin = role === "admin";
+  const isAdmin = role === "admin" || role === "superadmin";
 
   useEffect(() => {
     Promise.all([

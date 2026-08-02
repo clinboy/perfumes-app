@@ -1,0 +1,374 @@
+"use client";
+
+import { useEffect, useState, useMemo } from "react";
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  cost: number;
+  totalStock: number;
+  stockMercadito: number;
+  stockBoutique: number;
+  stockMiravalle: number;
+  stockDiamond: number;
+  stockMorelos: number;
+  imageUrl: string | null;
+}
+
+interface Sale {
+  id: number;
+  productId: number;
+  productName: string;
+  quantity: number;
+  price: number;
+  location: string;
+  paymentType: string;
+  amountPaid: number;
+  createdAt: string;
+}
+
+interface Purchase {
+  id: number;
+  productId: number;
+  productName: string;
+  quantity: number;
+  unitCost: number;
+  location: string;
+  notes: string;
+  userName: string;
+  createdAt: string;
+}
+
+const LOCATIONS = ["Mercadito", "Boutique", "Miravalle", "Diamond", "Morelos"];
+
+export default function FinanzasPage() {
+  const [tab, setTab] = useState<"compras" | "analisis">("compras");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
+
+  const [form, setForm] = useState({ productId: "", quantity: "1", unitCost: "", location: "Mercadito", notes: "" });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!d.user || d.user.role !== "superadmin") {
+          setAuthorized(false);
+          setLoading(false);
+          return;
+        }
+        setAuthorized(true);
+        Promise.all([
+          fetch("/api/products").then((r) => r.json()),
+          fetch("/api/sales").then((r) => r.json()),
+          fetch("/api/purchases").then((r) => r.json()),
+        ])
+          .then(([p, s, pu]) => {
+            setProducts(p.products || []);
+            setSales(s.sales || []);
+            setPurchases(pu.purchases || []);
+          })
+          .finally(() => setLoading(false));
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const selectedProduct = products.find((p) => p.id === parseInt(form.productId));
+
+  function updateForm(key: string, value: string) {
+    setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  async function handleRegister() {
+    if (!selectedProduct) return;
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch("/api/purchases", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: selectedProduct.id,
+          quantity: parseInt(form.quantity) || 1,
+          unitCost: parseFloat(form.unitCost) || 0,
+          location: form.location,
+          notes: form.notes,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Error al registrar compra");
+        return;
+      }
+      const [p, pu] = await Promise.all([
+        fetch("/api/products").then((r) => r.json()),
+        fetch("/api/purchases").then((r) => r.json()),
+      ]);
+      setProducts(p.products || []);
+      setPurchases(pu.purchases || []);
+      setForm((f) => ({ ...f, quantity: "1", unitCost: "", notes: "" }));
+    } catch {
+      setError("Error de conexión");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const analysis = useMemo(() => {
+    const soldMap: Record<number, { units: number; revenue: number }> = {};
+    for (const s of sales) {
+      const entry = soldMap[s.productId] || { units: 0, revenue: 0 };
+      entry.units += s.quantity;
+      entry.revenue += s.price * s.quantity;
+      soldMap[s.productId] = entry;
+    }
+
+    const rows = products.map((p) => {
+      const sold = soldMap[p.id] || { units: 0, revenue: 0 };
+      const cost = p.cost || 0;
+      const cogs = cost * sold.units;
+      const profit = sold.revenue - cogs;
+      return {
+        ...p,
+        unitsSold: sold.units,
+        revenue: sold.revenue,
+        cogs,
+        profit,
+        margin: sold.revenue > 0 ? (profit / sold.revenue) * 100 : 0,
+        inventoryCost: cost * p.totalStock,
+        inventoryValue: p.price * p.totalStock,
+      };
+    });
+
+    const totals = rows.reduce(
+      (acc, r) => ({
+        revenue: acc.revenue + r.revenue,
+        cogs: acc.cogs + r.cogs,
+        profit: acc.profit + r.profit,
+        inventoryCost: acc.inventoryCost + r.inventoryCost,
+        inventoryValue: acc.inventoryValue + r.inventoryValue,
+      }),
+      { revenue: 0, cogs: 0, profit: 0, inventoryCost: 0, inventoryValue: 0 }
+    );
+
+    return { rows, totals };
+  }, [products, sales]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-16">
+        <div className="animate-spin h-10 w-10 border-4 border-amber-600 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (authorized === false) {
+    return (
+      <div className="max-w-md mx-auto text-center py-20 animate-fade-in">
+        <div className="text-5xl mb-4">🔒</div>
+        <h1 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Acceso restringido</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">Esta sección es privada y solo está disponible para el administrador principal.</p>
+      </div>
+    );
+  }
+
+  const { rows, totals } = analysis;
+
+  const inputClass = "w-full px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 focus:ring-2 focus:ring-amber-500 outline-none text-gray-800 dark:text-white";
+  const labelClass = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5";
+
+  return (
+    <div className="space-y-4 animate-fade-in">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Finanzas</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Compras y análisis financiero</p>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={() => setTab("compras")}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${tab === "compras" ? "bg-amber-600 text-white shadow-sm" : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300"}`}
+        >
+          🛒 Compras
+        </button>
+        <button
+          onClick={() => setTab("analisis")}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${tab === "analisis" ? "bg-amber-600 text-white shadow-sm" : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300"}`}
+        >
+          📊 Análisis financiero
+        </button>
+      </div>
+
+      {tab === "compras" && (
+        <div className="space-y-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 p-5 space-y-4">
+            <h2 className="font-semibold text-gray-800 dark:text-white">Registrar compra</h2>
+            <div>
+              <label className={labelClass}>Producto</label>
+              <select
+                value={form.productId}
+                onChange={(e) => updateForm("productId", e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Seleccionar...</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name} — ${p.price.toLocaleString()}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className={labelClass}>Cantidad</label>
+                <input type="number" min="1" value={form.quantity} onChange={(e) => updateForm("quantity", e.target.value)} className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>Costo unitario</label>
+                <input type="number" min="0" step="0.01" value={form.unitCost} onChange={(e) => updateForm("unitCost", e.target.value)} className={inputClass} placeholder="$0" />
+              </div>
+              <div>
+                <label className={labelClass}>Sucursal</label>
+                <select value={form.location} onChange={(e) => updateForm("location", e.target.value)} className={inputClass}>
+                  {LOCATIONS.map((l) => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {selectedProduct && (
+              <div className="bg-gray-50 dark:bg-slate-700 rounded-xl p-3 text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Costo actual: </span>
+                <span className="font-bold text-gray-800 dark:text-white">${(selectedProduct.cost || 0).toLocaleString()}</span>
+                <span className="text-gray-500 dark:text-gray-400 mx-2">·</span>
+                <span className="text-gray-500 dark:text-gray-400">Total compra: </span>
+                <span className="font-bold text-green-600 dark:text-green-400">
+                  ${((parseFloat(form.unitCost) || 0) * (parseInt(form.quantity) || 1)).toLocaleString()}
+                </span>
+              </div>
+            )}
+
+            <div>
+              <label className={labelClass}>Notas</label>
+              <input type="text" value={form.notes} onChange={(e) => updateForm("notes", e.target.value)} className={inputClass} placeholder="Opcional" />
+            </div>
+
+            {error && <p className="text-sm text-red-500">{error}</p>}
+
+            <button
+              onClick={handleRegister}
+              disabled={!selectedProduct || saving}
+              className="w-full bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-xl font-medium transition-all disabled:opacity-50 active:scale-[0.98]"
+            >
+              {saving ? "Registrando..." : "Registrar compra y agregar stock"}
+            </button>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
+              <h2 className="font-semibold text-gray-800 dark:text-white">Historial de compras</h2>
+              <span className="text-xs text-gray-400">{purchases.length} compras</span>
+            </div>
+            {purchases.length === 0 ? (
+              <div className="p-8 text-center text-gray-400">Aún no hay compras registradas</div>
+            ) : (
+              <div className="divide-y divide-gray-50 dark:divide-slate-700">
+                {purchases.slice(0, 50).map((p) => (
+                  <div key={p.id} className="px-4 py-3 flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-800 dark:text-white truncate">{p.productName}</div>
+                      <div className="text-xs text-gray-400">
+                        {p.quantity} ud(s) · {p.location} · ${(p.unitCost * p.quantity).toLocaleString()}
+                        {p.userName ? ` · ${p.userName}` : ""}
+                        {p.notes ? ` · ${p.notes}` : ""}
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-sm font-bold text-green-600 dark:text-green-400">${(p.unitCost * p.quantity).toLocaleString()}</div>
+                      <div className="text-[10px] text-gray-400">{new Date(p.createdAt).toLocaleDateString()}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {tab === "analisis" && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-green-50 dark:bg-green-900/30 rounded-2xl p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Ingresos totales</p>
+              <p className="text-xl font-bold text-green-700 dark:text-green-400 mt-0.5">${totals.revenue.toLocaleString()}</p>
+            </div>
+            <div className="bg-blue-50 dark:bg-blue-900/30 rounded-2xl p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Costo de mercancía</p>
+              <p className="text-xl font-bold text-blue-700 dark:text-blue-400 mt-0.5">${totals.cogs.toLocaleString()}</p>
+            </div>
+            <div className="bg-amber-50 dark:bg-amber-900/30 rounded-2xl p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Ganancia</p>
+              <p className="text-xl font-bold text-amber-700 dark:text-amber-400 mt-0.5">${totals.profit.toLocaleString()}</p>
+            </div>
+            <div className="bg-purple-50 dark:bg-purple-900/30 rounded-2xl p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Margen</p>
+              <p className="text-xl font-bold text-purple-700 dark:text-purple-400 mt-0.5">
+                {totals.revenue > 0 ? Math.round((totals.profit / totals.revenue) * 100) : 0}%
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Valor inventario (a costo)</p>
+              <p className="text-lg font-bold text-gray-800 dark:text-white mt-0.5">${totals.inventoryCost.toLocaleString()}</p>
+            </div>
+            <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Valor inventario (a precio venta)</p>
+              <p className="text-lg font-bold text-gray-800 dark:text-white mt-0.5">${totals.inventoryValue.toLocaleString()}</p>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 dark:border-slate-700">
+              <h2 className="font-semibold text-gray-800 dark:text-white">Ganancia por producto</h2>
+            </div>
+            <div className="divide-y divide-gray-50 dark:divide-slate-700">
+              {rows.sort((a, b) => b.revenue - a.revenue).map((r) => (
+                <div key={r.id} className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    {r.imageUrl && <img src={r.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover" />}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-800 dark:text-white truncate">{r.name}</div>
+                      <div className="text-xs text-gray-400">
+                        Venta ${r.price.toLocaleString()} · Costo ${(r.cost || 0).toLocaleString()} · {r.unitsSold} ud(s) vendidas
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className={`text-sm font-bold ${r.profit >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                        ${r.profit.toLocaleString()}
+                      </div>
+                      <div className={`text-[10px] font-bold ${r.margin >= 0 ? "text-green-500" : "text-red-500"}`}>
+                        {r.margin.toFixed(1)}% margen
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-2 h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-amber-500 rounded-full"
+                      style={{ width: `${totals.revenue ? (r.revenue / totals.revenue) * 100 : 0}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

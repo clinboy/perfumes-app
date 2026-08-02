@@ -546,7 +546,7 @@ export default function VentasPage() {
                         <span className="text-[10px] font-bold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">Contado</span>
                       )}
                     </div>
-                    {role === "admin" && (
+                    {role === "admin" || role === "superadmin" ? (
                       <button
                         onClick={() => handleDeleteSale(s)}
                         className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-red-500 rounded-lg transition-all flex-shrink-0"
@@ -556,7 +556,7 @@ export default function VentasPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
-                    )}
+                    ) : null}
                   </div>
                   {isApartado && !isPaid && (
                     <div className="mt-2 flex items-center gap-3">

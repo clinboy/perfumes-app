@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   const { productId, from, to, quantity, notes } = body;
   const session = await getSession();
 
-  if (!session || session.role !== "admin") {
+  if (!session || (session.role !== "admin" && session.role !== "superadmin")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 

@@ -54,7 +54,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
-  if (!session || session.role !== "admin") {
+  if (!session || (session.role !== "admin" && session.role !== "superadmin")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 

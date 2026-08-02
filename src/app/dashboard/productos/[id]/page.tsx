@@ -7,6 +7,7 @@ interface ProductForm {
   name: string;
   size: string;
   price: string;
+  cost: string;
   totalStock: string;
   stockMercadito: string;
   stockBoutique: string;
@@ -21,10 +22,12 @@ interface ProductForm {
 export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
+  const [role, setRole] = useState<string | null>(null);
   const [form, setForm] = useState<ProductForm>({
     name: "",
     size: "",
     price: "",
+    cost: "",
     totalStock: "",
     stockMercadito: "",
     stockBoutique: "",
@@ -41,6 +44,13 @@ export default function EditProductPage() {
   const [showImage, setShowImage] = useState(false);
 
   useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => { if (d.user) setRole(d.user.role); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     async function load() {
       try {
         const res = await fetch(`/api/products/${params.id}`);
@@ -50,6 +60,7 @@ export default function EditProductPage() {
             name: data.product.name,
             size: data.product.size || "",
             price: String(data.product.price),
+            cost: String(data.product.cost || 0),
             totalStock: String(data.product.totalStock),
             stockMercadito: String(data.product.stockMercadito),
             stockBoutique: String(data.product.stockBoutique),
@@ -83,6 +94,7 @@ export default function EditProductPage() {
           name: form.name,
           size: form.size,
           price: parseFloat(form.price) || 0,
+          cost: parseFloat(form.cost) || 0,
           totalStock: parseInt(form.totalStock) || 0,
           stockMercadito: parseInt(form.stockMercadito) || 0,
           stockBoutique: parseInt(form.stockBoutique) || 0,
@@ -204,6 +216,21 @@ export default function EditProductPage() {
             </select>
           </div>
         </div>
+
+        {role === "superadmin" && (
+          <div>
+            <label className={labelClass}>Costo de compra (por unidad)</label>
+            <input
+              type="number"
+              step="0.01"
+              value={form.cost}
+              onChange={(e) => setForm({ ...form, cost: e.target.value })}
+              className={inputClass}
+              placeholder="$0"
+            />
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Solo visible para el super admin</p>
+          </div>
+        )}
 
         <div>
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stock por Sucursal</p>
