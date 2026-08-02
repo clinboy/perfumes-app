@@ -31,7 +31,6 @@ export default function ProductsPage() {
   const [priceMax, setPriceMax] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [role, setRole] = useState<string | null>(null);
-  const [stockFilter, setStockFilter] = useState<"" | "low" | "out">("");
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -57,7 +56,7 @@ export default function ProductsPage() {
     loadProducts();
   }, []);
 
-  const hasActiveFilters = categoryFilter || locationFilter || priceMin || priceMax || stockFilter;
+  const hasActiveFilters = categoryFilter || locationFilter || priceMin || priceMax;
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -72,23 +71,15 @@ export default function ProductsPage() {
         (locationFilter === "Morelos" && p.stockMorelos > 0);
       const matchPriceMin = !priceMin || p.price >= parseFloat(priceMin);
       const matchPriceMax = !priceMax || p.price <= parseFloat(priceMax);
-      const matchStock =
-        stockFilter === "low" ? p.totalStock > 0 && p.totalStock <= 2 :
-        stockFilter === "out" ? p.totalStock === 0 :
-        true;
-      return matchSearch && matchCategory && matchLocation && matchPriceMin && matchPriceMax && matchStock;
+      return matchSearch && matchCategory && matchLocation && matchPriceMin && matchPriceMax;
     });
-  }, [products, search, categoryFilter, locationFilter, priceMin, priceMax, stockFilter]);
-
-  const lowStockCount = products.filter((p) => p.totalStock > 0 && p.totalStock <= 2).length;
-  const outStockCount = products.filter((p) => p.totalStock === 0).length;
+  }, [products, search, categoryFilter, locationFilter, priceMin, priceMax]);
 
   function clearFilters() {
     setCategoryFilter("");
     setLocationFilter("");
     setPriceMin("");
     setPriceMax("");
-    setStockFilter("");
   }
 
   function exportCSV() {
@@ -159,31 +150,6 @@ export default function ProductsPage() {
           )}
         </div>
       </div>
-
-      {lowStockCount > 0 && (
-        <button
-          onClick={() => setStockFilter(stockFilter === "low" ? "" : "low")}
-          className={`flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border ${
-            stockFilter === "low"
-              ? "bg-amber-600 text-white border-amber-600"
-              : "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300"
-          }`}
-        >
-          ⚠️ Stock bajo ({lowStockCount}) — quedan 2 o menos unidades
-        </button>
-      )}
-      {outStockCount > 0 && (
-        <button
-          onClick={() => setStockFilter(stockFilter === "out" ? "" : "out")}
-          className={`flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border ${
-            stockFilter === "out"
-              ? "bg-red-600 text-white border-red-600"
-              : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400"
-          }`}
-        >
-          🚫 Sin stock ({outStockCount}) — agotados
-        </button>
-      )}
 
       <div className="relative">
         <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -298,10 +264,7 @@ export default function ProductsPage() {
                     </span>
                   )}
                   {p.totalStock === 0 && (
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">Sin stock</span>
-                  )}
-                  {p.totalStock > 0 && p.totalStock <= 2 && (
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">¡Stock bajo!</span>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-300">Sin stock</span>
                   )}
                   {[
                     { name: "Mercadito", value: p.stockMercadito, bg: "bg-blue-50 dark:bg-blue-900/30", text: "text-blue-600 dark:text-blue-400" },

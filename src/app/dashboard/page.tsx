@@ -82,7 +82,6 @@ export default function DashboardHome() {
   const monthRevenue = monthSales.reduce((sum, s) => sum + s.price * s.quantity, 0);
   const pendingApartados = sales.filter((s) => s.paymentType === "pagos" && s.amountPaid < s.price * s.quantity);
   const outOfStock = products.filter((p) => p.totalStock === 0);
-  const lowStock = products.filter((p) => p.totalStock > 0 && p.totalStock <= 2);
 
   const stats = [
     { label: "Valor total", value: `$${totalValue.toLocaleString()}`, icon: "💰", color: "text-green-600 dark:text-green-400", bg: "bg-green-50 dark:bg-green-900/30" },
@@ -141,17 +140,15 @@ export default function DashboardHome() {
         ))}
       </div>
 
-      {(lowStock.length > 0 || outOfStock.length > 0) && (
+      {outOfStock.length > 0 && (
         <Link
           href="/dashboard/productos"
           className="block bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4 transition-all duration-200 active:scale-[0.99]"
         >
           <div className="flex items-center gap-2">
-            <span className="text-xl">⚠️</span>
+            <span className="text-xl">🚫</span>
             <p className="font-semibold text-red-700 dark:text-red-300">
-              {outOfStock.length > 0 ? `¡${outOfStock.length} producto(s) agotados!` : ""}
-              {outOfStock.length > 0 && lowStock.length > 0 ? " · " : ""}
-              {lowStock.length > 0 ? `${lowStock.length} con stock bajo` : ""}
+              ¡{outOfStock.length} producto(s) agotados!
             </p>
           </div>
           <p className="text-xs text-red-500 dark:text-red-400 mt-1">Toca para ver el inventario y reponer</p>
