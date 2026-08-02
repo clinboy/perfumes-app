@@ -149,7 +149,7 @@ export default function ProductsPage() {
             onClick={exportCSV}
             className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 hover:border-amber-300 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm"
           >
-            â¬‡ï¸ Excel
+            ⬇️ Excel
           </button>
           {isAdmin && (
             <Link
