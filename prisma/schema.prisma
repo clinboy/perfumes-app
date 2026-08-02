@@ -79,3 +79,30 @@ model Purchase {
   notes     String   @default("")
   createdAt DateTime @default(now())
 }
+
+model HistoricalPurchase {
+  id       Int      @id @default(autoincrement())
+  date     DateTime
+  code     String   @default("")
+  product  String
+  quantity Int      @default(1)
+  unitCost Float    @default(0)
+  total    Float    @default(0)
+  order    String   @default("")
+  supplier String   @default("")
+}
+
+model HistoricalSale {
+  id              Int      @id @default(autoincrement())
+  date            DateTime
+  articleId       String   @default("")
+  product         String
+  channel         String   @default("")
+  unitCost        Float    @default(0)
+  grossIncome     Float    @default(0)
+  quantity        Int      @default(1)
+  variableExpenses Float   @default(0)
+  grossProfit     Float    @default(0)
+  netProfit       Float    @default(0)
+  order           String   @default("")
+}

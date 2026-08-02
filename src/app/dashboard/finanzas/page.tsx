@@ -40,13 +40,42 @@ interface Purchase {
   createdAt: string;
 }
 
+interface HistoricalPurchase {
+  id: number;
+  date: string;
+  code: string;
+  product: string;
+  quantity: number;
+  unitCost: number;
+  total: number;
+  order: string;
+  supplier: string;
+}
+
+interface HistoricalSale {
+  id: number;
+  date: string;
+  articleId: string;
+  product: string;
+  channel: string;
+  unitCost: number;
+  grossIncome: number;
+  quantity: number;
+  variableExpenses: number;
+  grossProfit: number;
+  netProfit: number;
+  order: string;
+}
+
 const LOCATIONS = ["Mercadito", "Boutique", "Miravalle", "Diamond", "Morelos"];
 
 export default function FinanzasPage() {
-  const [tab, setTab] = useState<"compras" | "analisis">("compras");
+  const [tab, setTab] = useState<"compras" | "analisis" | "historico">("compras");
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [historicalPurchases, setHistoricalPurchases] = useState<HistoricalPurchase[]>([]);
+  const [historicalSales, setHistoricalSales] = useState<HistoricalSale[]>([]);
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
 
@@ -68,11 +97,14 @@ export default function FinanzasPage() {
           fetch("/api/products").then((r) => r.json()),
           fetch("/api/sales").then((r) => r.json()),
           fetch("/api/purchases").then((r) => r.json()),
+          fetch("/api/historico").then((r) => r.json()),
         ])
-          .then(([p, s, pu]) => {
+          .then(([p, s, pu, h]) => {
             setProducts(p.products || []);
             setSales(s.sales || []);
             setPurchases(pu.purchases || []);
+            setHistoricalPurchases(h.purchases || []);
+            setHistoricalSales(h.sales || []);
           })
           .finally(() => setLoading(false));
       })
@@ -202,6 +234,12 @@ export default function FinanzasPage() {
           className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${tab === "analisis" ? "bg-amber-600 text-white shadow-sm" : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300"}`}
         >
           📊 Análisis financiero
+        </button>
+        <button
+          onClick={() => setTab("historico")}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${tab === "historico" ? "bg-amber-600 text-white shadow-sm" : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300"}`}
+        >
+          📜 Histórico
         </button>
       </div>
 
@@ -369,6 +407,239 @@ export default function FinanzasPage() {
           </div>
         </div>
       )}
+
+      {tab === "historico" && <HistoricoTab purchases={historicalPurchases} sales={historicalSales} />}
     </div>
   );
+}
+
+function HistoricoTab({
+  purchases,
+  sales,
+}: {
+  purchases: HistoricalPurchase[];
+  sales: HistoricalSale[];
+}) {
+  const [search, setSearch] = useState("");
+  const [subTab, setSubTab] = useState<"general" | "compras" | "ventas">("general");
+
+  const q = search.trim().toLowerCase();
+
+  const filteredPurchases = purchases.filter(
+    (p) =>
+      !q ||
+      p.product.toLowerCase().includes(q) ||
+      p.supplier.toLowerCase().includes(q) ||
+      p.code.toLowerCase().includes(q)
+  );
+  const filteredSales = sales.filter(
+    (s) =>
+      !q ||
+      s.product.toLowerCase().includes(q) ||
+      s.channel.toLowerCase().includes(q) ||
+      s.articleId.toLowerCase().includes(q)
+  );
+
+  const totals = useMemo(() => {
+    const totalPurchases = purchases.reduce((acc, p) => acc + (p.total || 0), 0);
+    const totalPurchaseUnits = purchases.reduce((acc, p) => acc + (p.quantity || 0), 0);
+    const grossIncome = sales.reduce((acc, s) => acc + (s.grossIncome || 0), 0);
+    const grossProfit = sales.reduce((acc, s) => acc + (s.grossProfit || 0), 0);
+    const netProfit = sales.reduce((acc, s) => acc + (s.netProfit || 0), 0);
+    const variableExpenses = sales.reduce((acc, s) => acc + (s.variableExpenses || 0), 0);
+    const soldUnits = sales.reduce((acc, s) => acc + (s.quantity || 0), 0);
+    return { totalPurchases, totalPurchaseUnits, grossIncome, grossProfit, netProfit, variableExpenses, soldUnits };
+  }, [purchases, sales]);
+
+  const productSummary = useMemo(() => {
+    const map: Record<string, {
+      name: string;
+      purchasedUnits: number;
+      purchaseCost: number;
+      soldUnits: number;
+      grossIncome: number;
+      netProfit: number;
+    }> = {};
+
+    for (const p of purchases) {
+      const e = map[p.product] || { name: p.product, purchasedUnits: 0, purchaseCost: 0, soldUnits: 0, grossIncome: 0, netProfit: 0 };
+      e.purchasedUnits += p.quantity || 0;
+      e.purchaseCost += p.total || 0;
+      map[p.product] = e;
+    }
+    for (const s of sales) {
+      const e = map[s.product] || { name: s.product, purchasedUnits: 0, purchaseCost: 0, soldUnits: 0, grossIncome: 0, netProfit: 0 };
+      e.soldUnits += s.quantity || 0;
+      e.grossIncome += s.grossIncome || 0;
+      e.netProfit += s.netProfit || 0;
+      map[s.product] = e;
+    }
+
+    return Object.values(map)
+      .filter((e) => e.soldUnits > 0)
+      .sort((a, b) => b.grossIncome - a.grossIncome);
+  }, [purchases, sales]);
+
+  const inputClass = "w-full px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 focus:ring-2 focus:ring-amber-500 outline-none text-gray-800 dark:text-white";
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Datos importados de tu Excel: {purchases.length} compras y {sales.length} ventas
+        </p>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => setSubTab("general")}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${subTab === "general" ? "bg-amber-600 text-white shadow-sm" : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300"}`}
+        >
+          📈 Resumen
+        </button>
+        <button
+          onClick={() => setSubTab("compras")}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${subTab === "compras" ? "bg-amber-600 text-white shadow-sm" : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300"}`}
+        >
+          🛒 Compras ({purchases.length})
+        </button>
+        <button
+          onClick={() => setSubTab("ventas")}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${subTab === "ventas" ? "bg-amber-600 text-white shadow-sm" : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300"}`}
+        >
+          💵 Ventas ({sales.length})
+        </button>
+      </div>
+
+      <div>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar por producto, canal, proveedor..."
+          className={inputClass}
+        />
+      </div>
+
+      {subTab === "general" && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="bg-blue-50 dark:bg-blue-900/30 rounded-2xl p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Inversión en compras</p>
+              <p className="text-xl font-bold text-blue-700 dark:text-blue-400 mt-0.5">${totals.totalPurchases.toLocaleString()}</p>
+              <p className="text-[10px] text-gray-400">{totals.totalPurchaseUnits} unidades compradas</p>
+            </div>
+            <div className="bg-green-50 dark:bg-green-900/30 rounded-2xl p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Ingresos brutos</p>
+              <p className="text-xl font-bold text-green-700 dark:text-green-400 mt-0.5">${totals.grossIncome.toLocaleString()}</p>
+              <p className="text-[10px] text-gray-400">{totals.soldUnits} unidades vendidas</p>
+            </div>
+            <div className="bg-amber-50 dark:bg-amber-900/30 rounded-2xl p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Utilidad neta</p>
+              <p className="text-xl font-bold text-amber-700 dark:text-amber-400 mt-0.5">${totals.netProfit.toLocaleString()}</p>
+              <p className="text-[10px] text-gray-400">Bruta ${totals.grossProfit.toLocaleString()}</p>
+            </div>
+            <div className="bg-purple-50 dark:bg-purple-900/30 rounded-2xl p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Gastos variables</p>
+              <p className="text-xl font-bold text-purple-700 dark:text-purple-400 mt-0.5">${totals.variableExpenses.toLocaleString()}</p>
+            </div>
+            <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Margen neto</p>
+              <p className="text-xl font-bold text-gray-800 dark:text-white mt-0.5">
+                {totals.grossIncome > 0 ? Math.round((totals.netProfit / totals.grossIncome) * 100) : 0}%
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 dark:border-slate-700">
+              <h2 className="font-semibold text-gray-800 dark:text-white">Resumen por producto</h2>
+              <p className="text-xs text-gray-400 mt-0.5">{productSummary.length} productos con ventas históricas</p>
+            </div>
+            <div className="divide-y divide-gray-50 dark:divide-slate-700">
+              {productSummary.filter((e) => !q || e.name.toLowerCase().includes(q)).map((e) => (
+                <div key={e.name} className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-800 dark:text-white truncate">{e.name}</div>
+                      <div className="text-xs text-gray-400">
+                        {e.purchasedUnits} comprados · {e.soldUnits} vendidos · ${e.grossIncome.toLocaleString()} ingresos
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className={`text-sm font-bold ${e.netProfit >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                        ${e.netProfit.toLocaleString()}
+                      </div>
+                      <div className="text-[10px] text-gray-400">
+                        {e.grossIncome > 0 ? Math.round((e.netProfit / e.grossIncome) * 100) : 0}% margen
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {subTab === "compras" && (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 overflow-hidden">
+          <div className="p-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
+            <h2 className="font-semibold text-gray-800 dark:text-white">Compras históricas</h2>
+            <span className="text-xs text-gray-400">{filteredPurchases.length} de {purchases.length}</span>
+          </div>
+          <div className="divide-y divide-gray-50 dark:divide-slate-700">
+            {filteredPurchases.map((p) => (
+              <div key={p.id} className="px-4 py-3 flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-800 dark:text-white truncate">{p.product}</div>
+                  <div className="text-xs text-gray-400">
+                    {p.quantity} ud(s) · ${(p.unitCost || 0).toLocaleString()} c/u
+                    {p.supplier ? ` · ${p.supplier}` : ""}
+                    {p.order ? ` · Pedido ${p.order}` : ""}
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <div className="text-sm font-bold text-blue-600 dark:text-blue-400">${(p.total || 0).toLocaleString()}</div>
+                  <div className="text-[10px] text-gray-400">{formatDate(p.date)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {subTab === "ventas" && (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 overflow-hidden">
+          <div className="p-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
+            <h2 className="font-semibold text-gray-800 dark:text-white">Ventas históricas</h2>
+            <span className="text-xs text-gray-400">{filteredSales.length} de {sales.length}</span>
+          </div>
+          <div className="divide-y divide-gray-50 dark:divide-slate-700">
+            {filteredSales.map((s) => (
+              <div key={s.id} className="px-4 py-3 flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-800 dark:text-white truncate">{s.product}</div>
+                  <div className="text-xs text-gray-400">
+                    {s.quantity} ud(s) · {s.channel || "Sin canal"}
+                    {s.order ? ` · ${s.order}` : ""}
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <div className="text-sm font-bold text-green-600 dark:text-green-400">${(s.grossIncome || 0).toLocaleString()}</div>
+                  <div className="text-[10px] text-gray-400">{formatDate(s.date)} · ${(s.netProfit || 0).toLocaleString()} utilidad</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString();
 }
