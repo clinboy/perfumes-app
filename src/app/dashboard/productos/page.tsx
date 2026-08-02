@@ -30,6 +30,7 @@ export default function ProductsPage() {
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState<"name" | "price-asc" | "price-desc" | "">("");
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function ProductsPage() {
   const hasActiveFilters = categoryFilter || locationFilter || priceMin || priceMax;
 
   const filtered = useMemo(() => {
-    return products.filter((p) => {
+    let list = products.filter((p) => {
       const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
       const matchCategory = !categoryFilter || p.category === categoryFilter;
       const matchLocation =
@@ -73,7 +74,17 @@ export default function ProductsPage() {
       const matchPriceMax = !priceMax || p.price <= parseFloat(priceMax);
       return matchSearch && matchCategory && matchLocation && matchPriceMin && matchPriceMax;
     });
-  }, [products, search, categoryFilter, locationFilter, priceMin, priceMax]);
+
+    if (sortBy === "name") {
+      list = [...list].sort((a, b) => a.name.localeCompare(b.name, "es"));
+    } else if (sortBy === "price-asc") {
+      list = [...list].sort((a, b) => a.price - b.price);
+    } else if (sortBy === "price-desc") {
+      list = [...list].sort((a, b) => b.price - a.price);
+    }
+
+    return list;
+  }, [products, search, categoryFilter, locationFilter, priceMin, priceMax, sortBy]);
 
   function clearFilters() {
     setCategoryFilter("");
@@ -168,24 +179,46 @@ export default function ProductsPage() {
         )}
       </div>
 
-      <button
-        onClick={() => setShowFilters(!showFilters)}
-        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border ${
-          showFilters || hasActiveFilters
-            ? "bg-amber-50 dark:bg-amber-900/30 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300"
-            : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:border-amber-300 hover:text-amber-700"
-        }`}
-      >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-        </svg>
-        Filtros
-        {hasActiveFilters && (
-          <span className="bg-amber-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-            {[categoryFilter, locationFilter, priceMin, priceMax].filter(Boolean).length}
-          </span>
-        )}
-      </button>
+      <div className="flex gap-2 flex-wrap">
+        <div className="relative flex-1 min-w-[160px]">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            className={`w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border appearance-none pr-8 ${
+              sortBy
+                ? "bg-amber-50 dark:bg-amber-900/30 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300"
+                : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300"
+            }`}
+          >
+            <option value="">Ordenar por...</option>
+            <option value="name">A-Z (alfabético)</option>
+            <option value="price-asc">Precio: menor a mayor</option>
+            <option value="price-desc">Precio: mayor a menor</option>
+          </select>
+          <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border ${
+            showFilters || hasActiveFilters
+              ? "bg-amber-50 dark:bg-amber-900/30 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300"
+              : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:border-amber-300 hover:text-amber-700"
+          }`}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          Filtros
+          {hasActiveFilters && (
+            <span className="bg-amber-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+              {[categoryFilter, locationFilter, priceMin, priceMax].filter(Boolean).length}
+            </span>
+          )}
+        </button>
+      </div>
 
       {showFilters && (
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-4 space-y-4 animate-slide-up">
