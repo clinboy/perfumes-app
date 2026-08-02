@@ -448,7 +448,9 @@ function HistoricoTab({
     const netProfit = sales.reduce((acc, s) => acc + (s.netProfit || 0), 0);
     const variableExpenses = sales.reduce((acc, s) => acc + (s.variableExpenses || 0), 0);
     const soldUnits = sales.reduce((acc, s) => acc + (s.quantity || 0), 0);
-    return { totalPurchases, totalPurchaseUnits, grossIncome, grossProfit, netProfit, variableExpenses, soldUnits };
+    const costOfSold = sales.reduce((acc, s) => acc + (s.unitCost || 0) * (s.quantity || 0), 0);
+    const remainingValue = totalPurchases - costOfSold;
+    return { totalPurchases, totalPurchaseUnits, grossIncome, grossProfit, netProfit, variableExpenses, soldUnits, costOfSold, remainingValue };
   }, [purchases, sales]);
 
   const productSummary = useMemo(() => {
@@ -549,6 +551,36 @@ function HistoricoTab({
                 {totals.grossIncome > 0 ? Math.round((totals.netProfit / totals.grossIncome) * 100) : 0}%
               </p>
             </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 p-4">
+            <h2 className="font-semibold text-gray-800 dark:text-white text-sm">Compras vs. ventas</h2>
+            <p className="text-xs text-gray-400 mt-0.5 mb-3">
+              Cuánto invertiste, cuánto de eso vendiste y cuánto quedó (en stock o pendiente).
+            </p>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Invertido</p>
+                <p className="text-base font-bold text-blue-700 dark:text-blue-400">${totals.totalPurchases.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Costo de lo vendido</p>
+                <p className="text-base font-bold text-amber-600 dark:text-amber-400">-${totals.costOfSold.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Queda (stock/mermas)</p>
+                <p className="text-base font-bold text-green-600 dark:text-green-400">${totals.remainingValue.toLocaleString()}</p>
+              </div>
+            </div>
+            <div className="mt-3 h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-amber-500 rounded-full"
+                style={{ width: `${totals.totalPurchases ? Math.min(100, (totals.costOfSold / totals.totalPurchases) * 100) : 0}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-gray-400 mt-1.5">
+              {totals.totalPurchases > 0 ? Math.round((totals.costOfSold / totals.totalPurchases) * 100) : 0}% de la inversión ya se vendió
+            </p>
           </div>
 
           <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 overflow-hidden">
