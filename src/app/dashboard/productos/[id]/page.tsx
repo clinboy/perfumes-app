@@ -206,7 +206,8 @@ export default function EditProductPage() {
         </div>
 
         <div>
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Stock por Sucursal</p>
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stock por Sucursal</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">Los cambios se registrarán automáticamente en Movimientos</p>
           <div className="grid grid-cols-5 gap-2">
             {[
               { key: "stockMercadito", label: "Mercadito", color: "focus:ring-blue-500" },

@@ -58,9 +58,9 @@ model Movement {
   id        Int      @id @default(autoincrement())
   productId Int
   product   Product  @relation(fields: [productId], references: [id])
-  userId    Int      @default(0)
-  from      String
-  to        String
+  userId        Int      @default(0)
+  fromLocation  String
+  toLocation    String
   quantity  Int      @default(1)
   notes     String   @default("")
   createdAt DateTime @default(now())
