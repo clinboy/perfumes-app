@@ -95,7 +95,7 @@ export default function ProductsPage() {
 
   function exportCSV() {
     const rows = [
-      ["Nombre", "TamaÃ±o", "CategorÃ­a", "Precio", "Total", "Mercadito", "Boutique", "Miravalle", "Diamond", "Morelos"],
+      ["Nombre", "Tamaño", "Categoría", "Precio", "Total", "Mercadito", "Boutique", "Miravalle", "Diamond", "Morelos"],
       ...filtered.map((p) => [
         p.name,
         p.size || "",
@@ -121,9 +121,9 @@ export default function ProductsPage() {
   const isAdmin = role === "admin" || role === "superadmin";
 
   async function handleDelete(id: number, name: string) {
-    const first = confirm(`Â¿Eliminar "${name}"?`);
+    const first = confirm(`¿Eliminar "${name}"?`);
     if (!first) return;
-    const second = confirm(`Â¿EstÃ¡s seguro? Esta acciÃ³n no se puede deshacer.`);
+    const second = confirm(`¿Estás seguro? Esta acción no se puede deshacer.`);
     if (!second) return;
     await fetch(`/api/products/${id}`, { method: "DELETE" });
     setProducts((prev) => prev.filter((p) => p.id !== id));
@@ -133,7 +133,7 @@ export default function ProductsPage() {
     switch (cat) {
       case "Original": return "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700";
       case "Calidad 1:1": return "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700";
-      case "ImitaciÃ³n": return "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700";
+      case "Imitación": return "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700";
       default: return "bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600";
     }
   };
@@ -224,12 +224,12 @@ export default function ProductsPage() {
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-4 space-y-4 animate-slide-up">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">CategorÃ­a</label>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Categoría</label>
               <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all">
                 <option value="">Todas</option>
                 <option value="Original">Original</option>
                 <option value="Calidad 1:1">Calidad 1:1</option>
-                <option value="ImitaciÃ³n">ImitaciÃ³n</option>
+                <option value="Imitación">Imitación</option>
               </select>
             </div>
             <div>
@@ -247,9 +247,9 @@ export default function ProductsPage() {
           <div>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Rango de precios</label>
             <div className="flex items-center gap-2">
-              <input type="number" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} placeholder="MÃ­n" className="flex-1 px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" />
-              <span className="text-gray-400">â€”</span>
-              <input type="number" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} placeholder="MÃ¡x" className="flex-1 px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" />
+              <input type="number" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} placeholder="Mín" className="flex-1 px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" />
+              <span className="text-gray-400">—</span>
+              <input type="number" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} placeholder="Máx" className="flex-1 px-3 py-2.5 border border-gray-200 dark:border-slate-600 rounded-xl text-sm bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" />
             </div>
           </div>
           {hasActiveFilters && (
